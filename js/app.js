@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('login-screen').classList.add('active');
         document.getElementById('app-container').classList.remove('active');
     } else {
+        document.getElementById('login-screen').classList.remove('active');
+        document.getElementById('app-container').classList.add('active');
+        window.api.password = pwd;
         initApp();
     }
 
