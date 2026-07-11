@@ -95,6 +95,13 @@ class ApiClient {
             body: JSON.stringify(data)
         });
     }
+
+    async resetHistory(phone) {
+        return this.request('/admin-reset', {
+            method: 'POST',
+            body: JSON.stringify({ phone })
+        });
+    }
 }
 
 window.api = new ApiClient();

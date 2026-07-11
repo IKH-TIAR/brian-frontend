@@ -128,12 +128,12 @@ function renderThread(data) {
     document.getElementById('thread-name').textContent = contact.name || "Unknown Guest";
     document.getElementById('thread-phone').textContent = contact.phone;
 
-    const returningBadge = document.getElementById('badge-returning');
-    if (contact.is_returning) returningBadge.classList.remove('hidden');
-    else returningBadge.classList.add('hidden');
-
-    // Mode toggle
+    document.getElementById('badge-returning').classList.toggle('hidden', !conversation.is_returning);
+    
     document.getElementById('quick-catchup-btn').style.display = 'flex';
+    document.getElementById('clear-history-btn').style.display = 'flex';
+    
+    // Mode toggle
     const modeToggle = document.getElementById('mode-toggle');
     const isHuman = contact.mode === 'HUMAN';
     modeToggle.checked = isHuman;
@@ -272,6 +272,36 @@ function setupEventListeners() {
             console.error("Catch up failed", err);
             alert("Failed to execute Catch Up command.");
         } finally {
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+            lucide.createIcons();
+        }
+    });
+
+    // Clear History Button
+    document.getElementById('clear-history-btn').addEventListener('click', async (e) => {
+        if (!currentPhone) return;
+        if (!confirm("Are you sure you want to completely clear the chat history for this guest? This cannot be undone.")) return;
+        
+        const btn = e.currentTarget;
+        if (btn.disabled) return;
+        const origHTML = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="loader" class="spin" style="width: 16px; height: 16px;"></i> Clearing...`;
+        btn.disabled = true;
+        
+        try {
+            await window.api.resetHistory(currentPhone);
+            // Wait briefly for N8N to process it and delete the rows
+            setTimeout(() => {
+                loadThread(currentPhone);
+                loadConversations(document.getElementById('search-input').value);
+                btn.disabled = false;
+                btn.innerHTML = origHTML;
+                lucide.createIcons();
+            }, 1000);
+        } catch (err) {
+            console.error("Failed to clear history", err);
+            alert("Failed to clear history");
             btn.disabled = false;
             btn.innerHTML = origHTML;
             lucide.createIcons();
