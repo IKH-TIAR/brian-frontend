@@ -133,6 +133,7 @@ function renderThread(data) {
     else returningBadge.classList.add('hidden');
 
     // Mode toggle
+    document.getElementById('quick-catchup-btn').style.display = 'flex';
     const modeToggle = document.getElementById('mode-toggle');
     const isHuman = contact.mode === 'HUMAN';
     modeToggle.checked = isHuman;
@@ -253,6 +254,27 @@ function setupEventListeners() {
         } catch (err) {
             console.error(err);
             e.target.checked = !e.target.checked;
+        }
+    });
+
+    // Quick Catch Up Button
+    document.getElementById('quick-catchup-btn').addEventListener('click', async (e) => {
+        if (!currentPhone) return;
+        const btn = e.currentTarget;
+        if (btn.disabled) return;
+        const origHTML = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="loader" class="spin" style="width: 14px; height: 14px;"></i> Catching up...`;
+        btn.disabled = true;
+        try {
+            await window.api.executeCommand('catchup', currentPhone, {});
+            loadThread(currentPhone);
+        } catch (err) {
+            console.error("Catch up failed", err);
+            alert("Failed to execute Catch Up command.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+            lucide.createIcons();
         }
     });
 

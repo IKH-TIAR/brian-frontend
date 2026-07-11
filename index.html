@@ -66,13 +66,18 @@
                         </div>
                         <p id="thread-phone">+506 8888 8888</p>
                     </div>
-                    <div class="mode-toggle-container">
-                        <span id="mode-label" class="mode-label bot-mode">BOT MODE</span>
-                        <label class="switch">
-                            <input type="checkbox" id="mode-toggle">
-                            <span class="slider round"></span>
-                        </label>
-                        <span class="mode-label human-mode">HUMAN MODE</span>
+                    <div class="mode-toggle-container" style="display: flex; align-items: center; gap: 1rem;">
+                        <button id="quick-catchup-btn" class="btn-primary" style="padding: 4px 10px; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; display: none;" title="AI Catch Up & Reply">
+                            <i data-lucide="zap" style="width: 14px; height: 14px;"></i> AI Catch Up
+                        </button>
+                        <div style="display: flex; align-items: center;">
+                            <span id="mode-label" class="mode-label bot-mode">BOT MODE</span>
+                            <label class="switch">
+                                <input type="checkbox" id="mode-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                            <span class="mode-label human-mode">HUMAN MODE</span>
+                        </div>
                     </div>
                     <button id="mobile-info-btn" class="icon-btn mobile-only" style="margin-left: 0.5rem;"><i
                             data-lucide="info"></i></button>
