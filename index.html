@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HBB Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css?v=4">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+
+<body>
+    <div id="login-screen" class="active">
+        <div class="login-card">
+            <h2>HBB Admin</h2>
+            <form id="login-form">
+                <input type="password" id="password" placeholder="Enter Admin Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="view-sidebar">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h2 style="margin: 0;">Conversations</h2>
+                    <button class="icon-btn" id="open-settings-btn" title="Command Settings"
+                        style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                        <i data-lucide="settings"></i>
+                    </button>
+                </div>
+                <div class="search-container">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search messages, names, phones...">
+                </div>
+            </div>
+            <div class="conversation-list" id="conversation-list">
+
+            </div>
+        </aside>
+
+
+        <main class="main-panel">
+            <div id="empty-state" class="active">
+                <div class="empty-state-content">
+                    <i data-lucide="message-circle" class="empty-icon"></i>
+                    <h3>Select a conversation</h3>
+                    <p>Choose a guest from the left panel to view their thread.</p>
+                </div>
+            </div>
+
+            <div id="thread-view">
+                <header class="thread-header">
+                    <div class="contact-info">
+                        <div class="contact-name-row">
+                            <button id="mobile-back-btn" class="icon-btn mobile-only"><i
+                                    data-lucide="arrow-left"></i></button>
+                            <h2 id="thread-name">Unknown Guest</h2>
+                            <button id="edit-name-btn" class="icon-btn"><i data-lucide="edit-2"></i></button>
+                            <span id="badge-returning" class="badge returning hidden">Returning</span>
+                        </div>
+                        <p id="thread-phone">+506 8888 8888</p>
+                    </div>
+                    <div class="mode-toggle-container">
+                        <span id="mode-label" class="mode-label bot-mode">BOT MODE</span>
+                        <label class="switch">
+                            <input type="checkbox" id="mode-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="mode-label human-mode">HUMAN MODE</span>
+                    </div>
+                    <button id="mobile-info-btn" class="icon-btn mobile-only" style="margin-left: 0.5rem;"><i
+                            data-lucide="info"></i></button>
+                </header>
+
+                <div id="escalation-banner" class="escalation-banner hidden">
+                    <i data-lucide="alert-triangle"></i>
+                    <span><strong>ESCALATED:</strong> <span id="escalation-reason-text">Reason here</span></span>
+                    <button id="resolve-escalation-btn">Resolve</button>
+                </div>
+
+                <div class="message-list" id="message-list">
+
+                </div>
+
+                <div class="reply-box" id="reply-box">
+                    <form id="reply-form">
+                        <input type="text" id="reply-input" placeholder="Type a message as Brian..." disabled>
+                        <button type="submit" id="reply-submit" disabled><i data-lucide="send"></i></button>
+                    </form>
+                    <div id="reply-warning" class="reply-warning hidden">
+                        Switch to HUMAN MODE to reply directly.
+                    </div>
+                </div>
+            </div>
+        </main>
+
+
+        <aside class="right-panel">
+            <header class="mobile-only"
+                style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                <button id="mobile-close-info-btn" class="icon-btn"><i data-lucide="x"></i></button>
+                <h2 style="margin: 0; font-size: 1.25rem;">Details</h2>
+            </header>
+            <div class="panel-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin-bottom: 0;">Reservation Details</h3>
+                    <button id="edit-booking-btn" class="icon-btn" style="display: none;" title="Edit Booking">
+                        <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+                <div class="details-card" id="reservation-details">
+                    <p>No active booking.</p>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>Admin Commands</h3>
+                <div id="commands-container">
+
+                </div>
+            </div>
+        </aside>
+    </div>
+
+
+    <div id="name-modal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Contact</h3>
+            <input type="text" id="edit-name-input" placeholder="Guest Name">
+            <label class="checkbox-label">
+                <input type="checkbox" id="edit-returning-checkbox"> Returning Guest
+            </label>
+            <div class="modal-actions">
+                <button id="cancel-name-btn" class="btn-secondary">Cancel</button>
+                <button id="save-name-btn" class="btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="command-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="cmd-title">Execute Command</h3>
+            <p id="cmd-desc">Fill in required parameters</p>
+            <form id="cmd-form">
+                <div id="cmd-params"></div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-cmd-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Execute</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content settings-modal">
+            <div class="modal-header">
+                <h2>Admin Commands Configuration</h2>
+                <button class="icon-btn close-modal" id="close-settings-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="settings-layout">
+                <div class="settings-sidebar" id="settings-command-list">
+
+                </div>
+                <div class="settings-editor" id="settings-editor" style="display: none;">
+                    <form id="command-edit-form">
+                        <input type="hidden" id="edit-cmd-id">
+
+                        <div class="form-group">
+                            <label>Command Label</label>
+                            <input type="text" id="edit-cmd-label" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Active Status</label>
+                            <div style="display: flex; align-items: center;">
+                                <label class="switch">
+                                    <input type="checkbox" id="edit-cmd-active">
+                                    <span class="slider round"></span>
+                                </label>
+                                <span class="toggle-label" style="margin-left: 10px; font-size: 0.85rem;">Enable this
+                                    command</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>AI System Prompt <span class="hint">(Instructions for the AI when this command
+                                    runs)</span></label>
+                            <textarea id="edit-cmd-prompt" rows="6"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>English Text Template <span class="hint">(Used if this is a manual text
+                                    command)</span></label>
+                            <textarea id="edit-cmd-en" rows="4"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Spanish Text Template <span class="hint">(Used if this is a manual text
+                                    command)</span></label>
+                            <textarea id="edit-cmd-es" rows="4"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Reservation</h3>
+            <form id="booking-form">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label
+                        style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Guest
+                        Name</label>
+                    <input type="text" id="booking-name"
+                        style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label
+                        style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Bungalow</label>
+                    <input type="text" id="booking-bungalow"
+                        style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label
+                        style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Check-in
+                        Date</label>
+                    <input type="date" id="booking-checkin"
+                        style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label
+                        style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Check-out
+                        Date</label>
+                    <input type="date" id="booking-checkout"
+                        style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-booking-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="save-booking-btn" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js?v=6"></script>
+    <script src="js/app.js?v=6"></script>
+</body>
+
+</html>
