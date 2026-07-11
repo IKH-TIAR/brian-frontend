@@ -280,11 +280,12 @@ function setupEventListeners() {
 
     // Clear History Button
     document.getElementById('clear-history-btn').addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        if (btn.disabled) return;
+        
         if (!currentPhone) return;
         if (!confirm("Are you sure you want to completely clear the chat history for this guest? This cannot be undone.")) return;
         
-        const btn = e.currentTarget;
-        if (btn.disabled) return;
         const origHTML = btn.innerHTML;
         btn.innerHTML = `<i data-lucide="loader" class="spin" style="width: 16px; height: 16px;"></i> Clearing...`;
         btn.disabled = true;
