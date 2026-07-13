@@ -119,6 +119,7 @@ async function loadThread(phone) {
         const data = await window.api.getConversationThread(phone);
         currentConvId = data.conversation.id;
         renderThread(data);
+        loadConversations(document.getElementById('search-input').value);
     } catch (e) {
         console.error("Failed to load thread:", e);
     }
