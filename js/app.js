@@ -496,9 +496,11 @@ function openCommandModal(cmd) {
         cmd.required_params.forEach(param => {
             const div = document.createElement('div');
             div.className = 'cmd-param-input';
+            const paramKey = typeof param === 'object' ? param.key : param;
+            const paramLabel = typeof param === 'object' ? param.label : param;
             div.innerHTML = `
-                <label>${param}</label>
-                <input type="text" name="${param}" required>
+                <label>${paramLabel}</label>
+                <input type="text" name="${paramKey}" placeholder="${paramLabel}" required>
             `;
             paramsContainer.appendChild(div);
         });
