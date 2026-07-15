@@ -119,7 +119,14 @@ async function loadThread(phone) {
         const data = await window.api.getConversationThread(phone);
         currentConvId = data.conversation.id;
         renderThread(data);
-        loadConversations(document.getElementById('search-input').value);
+
+        // Instantly clear the unread badge on this sidebar item locally
+        // (no need to re-fetch the whole sidebar just to remove a badge)
+        const activeItem = document.querySelector(`.conv-item[data-phone="${phone}"]`);
+        if (activeItem) {
+            const badge = activeItem.querySelector('.badge.unread');
+            if (badge) badge.remove();
+        }
     } catch (e) {
         console.error("Failed to load thread:", e);
     }
