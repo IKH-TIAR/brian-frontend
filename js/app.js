@@ -121,7 +121,6 @@ async function loadThread(phone) {
         renderThread(data);
 
         // Instantly clear the unread badge on this sidebar item locally
-        // (no need to re-fetch the whole sidebar just to remove a badge)
         const activeItem = document.querySelector(`.conv-item[data-phone="${phone}"]`);
         if (activeItem) {
             const badge = activeItem.querySelector('.badge.unread');
@@ -132,8 +131,62 @@ async function loadThread(phone) {
     }
 }
 
+async function loadOlderMessages() {
+    if (!currentPhone) return;
+    const list = document.getElementById('message-list');
+    const firstMsg = list.querySelector('.message[data-id]');
+    if (!firstMsg) return;
+
+    const btn = document.getElementById('load-older-btn');
+    if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
+
+    try {
+        const data = await window.api.getConversationThread(currentPhone, firstMsg.dataset.id);
+        if (!data.messages || data.messages.length === 0) {
+            if (btn) btn.remove();
+            return;
+        }
+
+        // Save scroll position before prepending
+        const prevScrollHeight = list.scrollHeight;
+
+        // Prepend older messages after the "Load older" button but before existing messages
+        const fragment = document.createDocumentFragment();
+        data.messages.forEach(msg => {
+            fragment.appendChild(buildMessageEl(msg));
+        });
+        const insertPoint = btn ? btn.nextSibling : list.firstChild;
+        list.insertBefore(fragment, insertPoint);
+
+        // Restore scroll position so it doesn't jump
+        list.scrollTop = list.scrollHeight - prevScrollHeight;
+
+        // Update or remove the load-older button
+        if (btn) {
+            if (data.has_more) {
+                btn.textContent = 'Load older messages';
+                btn.disabled = false;
+            } else {
+                btn.remove();
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load older messages:', e);
+        if (btn) { btn.textContent = 'Load older messages'; btn.disabled = false; }
+    }
+}
+
+function buildMessageEl(msg) {
+    const div = document.createElement('div');
+    div.className = `message msg-${msg.role}`;
+    div.dataset.id = msg.id;
+    const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    div.innerHTML = `${msg.content}<span class="time">${timeStr}</span>`;
+    return div;
+}
+
 function renderThread(data) {
-    const { contact, conversation, messages } = data;
+    const { contact, conversation, messages, has_more } = data;
 
     // Header
     document.getElementById('thread-name').textContent = contact.name || "Unknown Guest";
@@ -167,21 +220,21 @@ function renderThread(data) {
     const list = document.getElementById('message-list');
     list.innerHTML = '';
 
+    // Show "Load older" button at the top if there are more messages
+    if (has_more) {
+        const olderBtn = document.createElement('button');
+        olderBtn.id = 'load-older-btn';
+        olderBtn.textContent = 'Load older messages';
+        olderBtn.style.cssText = 'display:block;margin:8px auto 12px;padding:6px 14px;font-size:0.8rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--text-secondary);';
+        olderBtn.addEventListener('click', loadOlderMessages);
+        list.appendChild(olderBtn);
+    }
+
     let isEscalated = false;
     let escReason = "";
 
     messages.forEach(msg => {
-        const div = document.createElement('div');
-        div.className = `message msg-${msg.role}`;
-
-        const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
-        div.innerHTML = `
-            ${msg.content}
-            <span class="time">${timeStr}</span>
-        `;
-        list.appendChild(div);
-
+        list.appendChild(buildMessageEl(msg));
         if (msg.escalated && msg.role === 'assistant' && isHuman) {
             isEscalated = true;
             escReason = msg.escalation_reason || "Check messages";

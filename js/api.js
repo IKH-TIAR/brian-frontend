@@ -33,8 +33,9 @@ class ApiClient {
         return this.request(`/conversations${query}`);
     }
 
-    async getConversationThread(phone) {
-        return this.request(`/conversations/${encodeURIComponent(phone)}`);
+    async getConversationThread(phone, before = null) {
+        const query = before ? `?before=${encodeURIComponent(before)}` : '';
+        return this.request(`/conversations/${encodeURIComponent(phone)}${query}`);
     }
 
     // Contacts
