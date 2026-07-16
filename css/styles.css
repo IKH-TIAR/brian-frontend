@@ -26,7 +26,8 @@ body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-primary);
-    height: 100vh;
+    height: 100dvh;
+    height: 100vh; /* fallback for older browsers */
     overflow: hidden;
 }
 
@@ -78,7 +79,8 @@ body {
 /* App Layout (Mobile First) */
 #app-container {
     display: none;
-    height: 100vh;
+    height: 100dvh;
+    height: 100vh; /* fallback */
     width: 100vw;
     position: relative;
     overflow: hidden;
@@ -317,6 +319,8 @@ input:checked + .slider:before { transform: translateX(20px); }
     font-size: 0.95rem;
     line-height: 1.4;
     white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
     position: relative;
 }
 .message .time {
@@ -345,6 +349,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 .reply-box {
     padding: 1rem 1.5rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     background: var(--bg-panel);
     border-top: 1px solid var(--border);
 }
