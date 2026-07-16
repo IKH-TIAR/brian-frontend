@@ -615,6 +615,128 @@ input:checked + .slider:before { transform: translateX(18px); }
     margin-top: 30px;
 }
 
+/* ── Bungalow Codes ── */
+.bungalow-modal {
+    max-width: 1100px;
+    width: 95vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.bungalow-grid-wrapper {
+    flex: 1;
+    overflow: auto;
+    margin-top: 1rem;
+}
+
+.bungalow-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    min-width: 750px;
+}
+
+.bungalow-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.bungalow-table th {
+    background: var(--bg-dark);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+
+.bungalow-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    vertical-align: middle;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bungalow-table td.notes-cell {
+    max-width: 200px;
+}
+
+.bungalow-table tbody tr {
+    transition: background 0.15s;
+}
+
+.bungalow-table tbody tr:hover {
+    background: var(--bg-hover);
+}
+
+.bungalow-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.bungalow-table tbody tr:nth-child(even):hover {
+    background: var(--bg-hover);
+}
+
+.bungalow-actions {
+    display: flex;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.bungalow-actions button {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    transition: all 0.15s;
+}
+
+.bungalow-actions button:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.bungalow-actions .btn-delete:hover {
+    color: var(--accent-red);
+    border-color: var(--accent-red);
+}
+
+.bungalow-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.bungalow-name-cell {
+    font-weight: 600;
+    color: var(--accent-teal) !important;
+}
+
+.bungalow-code-cell {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+}
+
+/* Cards hidden on desktop, shown on mobile */
+.bungalow-card { display: none; }
+
 /* ── Responsive / Mobile ── */
 @media (max-width: 768px) {
     .mobile-only { display: flex !important; }
@@ -674,5 +796,105 @@ input:checked + .slider:before { transform: translateX(18px); }
     .quick-catchup-btn i {
         width: 12px !important;
         height: 12px !important;
+    }
+
+    /* Bungalow modal – full screen on mobile */
+    .bungalow-modal {
+        width: 100vw;
+        max-width: 100vw;
+        max-height: 100vh;
+        height: 100vh;
+        border-radius: 0;
+        padding: 1rem;
+    }
+
+    .bungalow-modal .modal-header h2 {
+        font-size: 1.1rem;
+    }
+
+    /* Switch to card layout on mobile instead of table */
+    .bungalow-table {
+        display: none;
+    }
+
+    .bungalow-grid-wrapper {
+        margin-top: 0.75rem;
+    }
+
+    /* Card-based rendering for mobile — injected via JS */
+    .bungalow-card {
+        display: block;
+        background: var(--bg-dark);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .bungalow-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .bungalow-card-header .bungalow-card-name {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--accent-teal);
+    }
+
+    .bungalow-card-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.85rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .bungalow-card-row:last-child {
+        border-bottom: none;
+    }
+
+    .bungalow-card-label {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .bungalow-card-value {
+        color: var(--text-primary);
+        font-weight: 500;
+        text-align: right;
+        max-width: 60%;
+        word-break: break-word;
+    }
+
+    .bungalow-card-value.code {
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+    }
+
+    .bungalow-card-notes {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    /* Bungalow form: stack 2-col grids */
+    #bungalow-form-modal .modal-content {
+        width: 95%;
+        max-width: 95%;
+        padding: 1.5rem;
+    }
+
+    #bungalow-form-modal [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 0 !important;
     }
 }

@@ -78,7 +78,7 @@ function renderConversationList(convs) {
         div.dataset.phone = c.phone;
 
         const nameDisplay = c.name || c.phone;
-        const timeStr = c.last_message_at ? new Date(c.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const timeStr = c.last_message_at ? new Date(c.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' }) : '';
         const modeDotClass = c.mode === 'HUMAN' ? 'human' : 'bot';
 
         div.innerHTML = `
@@ -180,7 +180,7 @@ function buildMessageEl(msg) {
     const div = document.createElement('div');
     div.className = `message msg-${msg.role}`;
     div.dataset.id = msg.id;
-    const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' }) : '';
     div.innerHTML = `${msg.content}<span class="time">${timeStr}</span>`;
     return div;
 }
@@ -537,6 +537,20 @@ function setupEventListeners() {
         e.preventDefault();
         await saveCommandConfig();
     });
+
+    // Bungalow Codes Modal
+    document.getElementById('open-bungalows-btn').addEventListener('click', openBungalowModal);
+    document.getElementById('close-bungalows-btn').addEventListener('click', () => {
+        document.getElementById('bungalow-modal').classList.remove('active');
+    });
+    document.getElementById('add-bungalow-btn').addEventListener('click', () => openBungalowForm());
+    document.getElementById('cancel-bungalow-btn').addEventListener('click', () => {
+        document.getElementById('bungalow-form-modal').classList.remove('active');
+    });
+    document.getElementById('bungalow-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await saveBungalow();
+    });
 }
 
 function openCommandModal(cmd) {
@@ -696,5 +710,182 @@ async function saveCommandConfig() {
         alert("Failed to save command.");
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
+    }
+}
+
+// ── Bungalow Codes CRUD ──
+let allBungalows = [];
+
+async function openBungalowModal() {
+    document.getElementById('bungalow-modal').classList.add('active');
+    await loadBungalows();
+}
+
+async function loadBungalows() {
+    try {
+        allBungalows = await window.api.getBungalows();
+        renderBungalowTable();
+    } catch (e) {
+        console.error('Failed to load bungalows:', e);
+    }
+}
+
+function renderBungalowTable() {
+    const tbody = document.getElementById('bungalow-tbody');
+    const table = document.getElementById('bungalow-table');
+    const empty = document.getElementById('bungalow-empty');
+    const wrapper = document.getElementById('bungalow-grid-wrapper');
+
+    tbody.innerHTML = '';
+
+    // Remove any existing mobile cards
+    wrapper.querySelectorAll('.bungalow-card').forEach(c => c.remove());
+
+    if (allBungalows.length === 0) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        lucide.createIcons();
+        return;
+    }
+
+    table.style.display = 'table';
+    empty.style.display = 'none';
+
+    allBungalows.forEach(b => {
+        // Desktop table row
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="bungalow-name-cell">${escapeHtml(b.bungalow)}</td>
+            <td class="bungalow-code-cell">${escapeHtml(b.door_code)}</td>
+            <td class="bungalow-code-cell">${escapeHtml(b.lockbox_code)}</td>
+            <td>${escapeHtml(b.lockbox_location)}</td>
+            <td>${escapeHtml(b.wifi_name)}</td>
+            <td>${escapeHtml(b.wifi_password)}</td>
+            <td class="notes-cell" title="${escapeHtml(b.special_notes)}">${escapeHtml(b.special_notes)}</td>
+            <td>
+                <div class="bungalow-actions">
+                    <button onclick="openBungalowForm('${b.id}')" title="Edit">
+                        <i data-lucide="edit-2" style="width:14px;height:14px;"></i>
+                    </button>
+                    <button class="btn-delete" onclick="deleteBungalow('${b.id}', '${escapeHtml(b.bungalow)}')" title="Delete">
+                        <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+
+        // Mobile card
+        const card = document.createElement('div');
+        card.className = 'bungalow-card';
+        let notesHtml = b.special_notes ? `<div class="bungalow-card-notes">${escapeHtml(b.special_notes)}</div>` : '';
+        card.innerHTML = `
+            <div class="bungalow-card-header">
+                <span class="bungalow-card-name">${escapeHtml(b.bungalow)}</span>
+                <div class="bungalow-actions">
+                    <button onclick="openBungalowForm('${b.id}')" title="Edit">
+                        <i data-lucide="edit-2" style="width:14px;height:14px;"></i>
+                    </button>
+                    <button class="btn-delete" onclick="deleteBungalow('${b.id}', '${escapeHtml(b.bungalow)}')" title="Delete">
+                        <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                    </button>
+                </div>
+            </div>
+            ${b.door_code ? `<div class="bungalow-card-row"><span class="bungalow-card-label">Door Code</span><span class="bungalow-card-value code">${escapeHtml(b.door_code)}</span></div>` : ''}
+            ${b.lockbox_code ? `<div class="bungalow-card-row"><span class="bungalow-card-label">Lockbox Code</span><span class="bungalow-card-value code">${escapeHtml(b.lockbox_code)}</span></div>` : ''}
+            ${b.lockbox_location ? `<div class="bungalow-card-row"><span class="bungalow-card-label">Lockbox Location</span><span class="bungalow-card-value">${escapeHtml(b.lockbox_location)}</span></div>` : ''}
+            ${b.wifi_name ? `<div class="bungalow-card-row"><span class="bungalow-card-label">WiFi Name</span><span class="bungalow-card-value">${escapeHtml(b.wifi_name)}</span></div>` : ''}
+            ${b.wifi_password ? `<div class="bungalow-card-row"><span class="bungalow-card-label">WiFi Password</span><span class="bungalow-card-value code">${escapeHtml(b.wifi_password)}</span></div>` : ''}
+            ${notesHtml}
+        `;
+        wrapper.appendChild(card);
+    });
+
+    lucide.createIcons();
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function openBungalowForm(id = null) {
+    const modal = document.getElementById('bungalow-form-modal');
+    const title = document.getElementById('bungalow-form-title');
+    document.getElementById('bungalow-edit-id').value = id || '';
+
+    if (id) {
+        title.textContent = 'Edit Bungalow';
+        const b = allBungalows.find(x => x.id === id);
+        if (b) {
+            document.getElementById('bf-bungalow').value = b.bungalow;
+            document.getElementById('bf-door-code').value = b.door_code;
+            document.getElementById('bf-lockbox-code').value = b.lockbox_code;
+            document.getElementById('bf-lockbox-location').value = b.lockbox_location;
+            document.getElementById('bf-wifi-name').value = b.wifi_name;
+            document.getElementById('bf-wifi-password').value = b.wifi_password;
+            document.getElementById('bf-special-notes').value = b.special_notes;
+        }
+    } else {
+        title.textContent = 'Add Bungalow';
+        document.getElementById('bf-bungalow').value = '';
+        document.getElementById('bf-door-code').value = '';
+        document.getElementById('bf-lockbox-code').value = '';
+        document.getElementById('bf-lockbox-location').value = '';
+        document.getElementById('bf-wifi-name').value = '';
+        document.getElementById('bf-wifi-password').value = '';
+        document.getElementById('bf-special-notes').value = '';
+    }
+
+    modal.classList.add('active');
+}
+
+async function saveBungalow() {
+    const id = document.getElementById('bungalow-edit-id').value;
+    const btn = document.getElementById('save-bungalow-btn');
+    if (btn.disabled) return;
+
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const data = {
+        bungalow: document.getElementById('bf-bungalow').value.trim(),
+        door_code: document.getElementById('bf-door-code').value.trim(),
+        lockbox_code: document.getElementById('bf-lockbox-code').value.trim(),
+        lockbox_location: document.getElementById('bf-lockbox-location').value.trim(),
+        wifi_name: document.getElementById('bf-wifi-name').value.trim(),
+        wifi_password: document.getElementById('bf-wifi-password').value.trim(),
+        special_notes: document.getElementById('bf-special-notes').value.trim(),
+    };
+
+    try {
+        if (id) {
+            await window.api.updateBungalow(id, data);
+        } else {
+            await window.api.createBungalow(data);
+        }
+        document.getElementById('bungalow-form-modal').classList.remove('active');
+        await loadBungalows();
+    } catch (e) {
+        console.error('Failed to save bungalow:', e);
+        alert('Failed to save bungalow. ' + (e.message || ''));
+    } finally {
+        btn.disabled = false;
+        btn.textContent = origText;
+    }
+}
+
+async function deleteBungalow(id, name) {
+    if (!confirm(`Are you sure you want to delete bungalow "${name}"? This cannot be undone.`)) return;
+
+    try {
+        await window.api.deleteBungalow(id);
+        await loadBungalows();
+    } catch (e) {
+        console.error('Failed to delete bungalow:', e);
+        alert('Failed to delete bungalow.');
     }
 }

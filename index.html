@@ -29,10 +29,16 @@
             <div class="sidebar-header">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <h2 style="margin: 0;">Conversations</h2>
-                    <button class="icon-btn" id="open-settings-btn" title="Command Settings"
-                        style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                        <i data-lucide="settings"></i>
-                    </button>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="icon-btn" id="open-bungalows-btn" title="Bungalow Codes"
+                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                            <i data-lucide="key"></i>
+                        </button>
+                        <button class="icon-btn" id="open-settings-btn" title="Command Settings"
+                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                            <i data-lucide="settings"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="search-container">
                     <i data-lucide="search" class="search-icon"></i>
@@ -224,6 +230,94 @@
         </div>
     </div>
 
+
+    <div id="bungalow-modal" class="modal">
+        <div class="modal-content bungalow-modal">
+            <div class="modal-header">
+                <h2>Bungalow Codes</h2>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="btn-primary" id="add-bungalow-btn" style="padding: 6px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add
+                    </button>
+                    <button class="icon-btn close-modal" id="close-bungalows-btn"><i data-lucide="x"></i></button>
+                </div>
+            </div>
+            <div class="bungalow-grid-wrapper" id="bungalow-grid-wrapper">
+                <table class="bungalow-table" id="bungalow-table">
+                    <thead>
+                        <tr>
+                            <th>Bungalow</th>
+                            <th>Door Code</th>
+                            <th>Lockbox Code</th>
+                            <th>Lockbox Location</th>
+                            <th>WiFi Name</th>
+                            <th>WiFi Password</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bungalow-tbody"></tbody>
+                </table>
+                <div id="bungalow-empty" class="bungalow-empty" style="display: none;">
+                    <i data-lucide="home" style="width: 48px; height: 48px; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                    <p>No bungalow codes yet.</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Click <strong>Add</strong> to create your first entry.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bungalow-form-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="bungalow-form-title">Add Bungalow</h3>
+            <form id="bungalow-form">
+                <input type="hidden" id="bungalow-edit-id">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Bungalow Name *</label>
+                    <input type="text" id="bf-bungalow" required
+                        style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Door Code</label>
+                        <input type="text" id="bf-door-code"
+                            style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Lockbox Code</label>
+                        <input type="text" id="bf-lockbox-code"
+                            style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Lockbox Location</label>
+                    <input type="text" id="bf-lockbox-location"
+                        style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">WiFi Name</label>
+                        <input type="text" id="bf-wifi-name"
+                            style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">WiFi Password</label>
+                        <input type="text" id="bf-wifi-password"
+                            style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Special Notes</label>
+                    <textarea id="bf-special-notes" rows="3"
+                        style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-bungalow-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="save-bungalow-btn" class="btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div id="booking-modal" class="modal">
         <div class="modal-content">

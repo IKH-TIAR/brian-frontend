@@ -104,6 +104,31 @@ class ApiClient {
             body: JSON.stringify({ phone })
         });
     }
+
+    // Bungalow Codes
+    async getBungalows() {
+        return this.request('/admin/bungalows');
+    }
+
+    async createBungalow(data) {
+        return this.request('/admin/bungalows', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateBungalow(id, data) {
+        return this.request(`/admin/bungalows/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteBungalow(id) {
+        return this.request(`/admin/bungalows/${encodeURIComponent(id)}`, {
+            method: 'DELETE'
+        });
+    }
 }
 
 window.api = new ApiClient();
