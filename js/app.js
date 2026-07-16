@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
 
     // Check Auth
-    const pwd = sessionStorage.getItem('hbb_admin_pwd');
+    const pwd = localStorage.getItem('hbb_admin_pwd');
     if (!pwd) {
         document.getElementById('login-screen').classList.add('active');
         document.getElementById('app-container').classList.remove('active');
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const pwdInput = document.getElementById('password').value;
-        sessionStorage.setItem('hbb_admin_pwd', pwdInput);
+        localStorage.setItem('hbb_admin_pwd', pwdInput);
         window.api.password = pwdInput;
 
         document.getElementById('login-screen').classList.remove('active');

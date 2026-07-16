@@ -4,7 +4,7 @@ const WS_BASE = 'wss://raphael-precipiced-lashunda.ngrok-free.dev/ws';
 
 class ApiClient {
     constructor() {
-        this.password = sessionStorage.getItem('hbb_admin_pwd');
+        this.password = localStorage.getItem('hbb_admin_pwd');
     }
 
     async request(endpoint, options = {}) {
@@ -20,6 +20,12 @@ class ApiClient {
         };
 
         const response = await fetch(`${API_BASE}${endpoint}`, config);
+
+        if (response.status === 401) {
+            localStorage.removeItem('hbb_admin_pwd');
+            window.location.reload();
+            return;
+        }
 
         if (!response.ok) {
             throw new Error(`API Error: ${response.status} ${response.statusText}`);
