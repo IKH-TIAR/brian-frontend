@@ -570,11 +570,16 @@ function openCommandModal(cmd) {
         cmd.required_params.forEach(param => {
             const div = document.createElement('div');
             div.className = 'cmd-param-input';
-            const paramKey = typeof param === 'object' ? param.key : param;
-            const paramLabel = typeof param === 'object' ? param.label : param;
+            const paramKey = typeof param === 'object' ? (param.key || param.name) : param;
+            const paramLabel = typeof param === 'object' ? (param.label || paramKey) : param;
+            
+            // Default to required if not explicitly set to false
+            const isRequired = typeof param === 'object' && param.required === false ? false : true;
+            const requiredAttr = isRequired ? 'required' : '';
+            
             div.innerHTML = `
                 <label>${paramLabel}</label>
-                <input type="text" name="${paramKey}" placeholder="${paramLabel}" required>
+                <input type="text" name="${paramKey}" placeholder="${paramLabel}" ${requiredAttr}>
             `;
             paramsContainer.appendChild(div);
         });
