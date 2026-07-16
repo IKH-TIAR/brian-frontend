@@ -1,5 +1,6 @@
-const API_BASE = 'https://grove-retold-outmatch.ngrok-free.dev/api';
-const WS_BASE = 'wss://grove-retold-outmatch.ngrok-free.dev/ws';
+const API_BASE = 'https://raphael-precipiced-lashunda.ngrok-free.dev/api';
+const WS_BASE = 'wss://raphael-precipiced-lashunda.ngrok-free.dev/ws';
+
 
 class ApiClient {
     constructor() {
