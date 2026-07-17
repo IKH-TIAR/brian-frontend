@@ -26,8 +26,8 @@ body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-primary);
-    height: 100dvh;
     height: 100vh; /* fallback for older browsers */
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -79,8 +79,8 @@ body {
 /* App Layout (Mobile First) */
 #app-container {
     display: none;
-    height: 100dvh;
     height: 100vh; /* fallback */
+    height: 100dvh;
     width: 100vw;
     position: relative;
     overflow: hidden;
@@ -804,7 +804,9 @@ input:checked + .slider:before { transform: translateX(18px); }
         width: 100vw;
         max-width: 100vw;
         max-height: 100vh;
+        max-height: 100dvh;
         height: 100vh;
+        height: 100dvh;
         border-radius: 0;
         padding: 1rem;
     }
