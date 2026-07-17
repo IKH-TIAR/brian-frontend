@@ -45,7 +45,7 @@ async function initApp() {
 }
 
 function setupWebSocket() {
-    ws = new WebSocket('ws://localhost:8000/ws');
+    ws = new WebSocket(WS_BASE);
 
     ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
