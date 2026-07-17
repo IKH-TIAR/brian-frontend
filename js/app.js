@@ -673,6 +673,7 @@ function openSettingsEditor(cmd) {
     document.getElementById('edit-cmd-id').value = cmd.id;
     document.getElementById('edit-cmd-label').value = cmd.label;
     document.getElementById('edit-cmd-active').checked = cmd.is_active;
+    document.getElementById('edit-cmd-set-bot').checked = (cmd.set_mode_after === 'BOT');
     document.getElementById('edit-cmd-prompt').value = cmd.ai_system_prompt || "";
     document.getElementById('edit-cmd-en').value = cmd.template_en || "";
     document.getElementById('edit-cmd-es').value = cmd.template_es || "";
@@ -683,6 +684,7 @@ async function saveCommandConfig() {
     const data = {
         label: document.getElementById('edit-cmd-label').value,
         is_active: document.getElementById('edit-cmd-active').checked,
+        set_mode_after: document.getElementById('edit-cmd-set-bot').checked ? 'BOT' : null,
         ai_system_prompt: document.getElementById('edit-cmd-prompt').value,
         template_en: document.getElementById('edit-cmd-en').value,
         template_es: document.getElementById('edit-cmd-es').value
