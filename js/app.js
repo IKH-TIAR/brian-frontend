@@ -531,6 +531,13 @@ function setupEventListeners() {
     document.getElementById('open-settings-btn').addEventListener('click', openSettingsModal);
     document.getElementById('close-settings-btn').addEventListener('click', () => {
         document.getElementById('settings-modal').classList.remove('active');
+        document.getElementById('settings-modal').classList.remove('view-editor');
+    });
+    
+    document.getElementById('mobile-back-settings-btn').addEventListener('click', () => {
+        document.getElementById('settings-modal').classList.remove('view-editor');
+        document.getElementById('settings-editor').style.display = 'none';
+        document.querySelectorAll('.settings-cmd-item').forEach(el => el.classList.remove('active'));
     });
 
     document.getElementById('command-edit-form').addEventListener('submit', async (e) => {
@@ -628,6 +635,7 @@ let allCommandsConfig = [];
 
 async function openSettingsModal() {
     document.getElementById('settings-modal').classList.add('active');
+    document.getElementById('settings-modal').classList.remove('view-editor');
     document.getElementById('settings-editor').style.display = 'none';
     await loadSettingsCommands();
 }
@@ -668,6 +676,7 @@ function renderSettingsSidebar() {
 }
 
 function openSettingsEditor(cmd) {
+    document.getElementById('settings-modal').classList.add('view-editor');
     document.getElementById('settings-editor').style.display = 'block';
 
     document.getElementById('edit-cmd-id').value = cmd.id;
