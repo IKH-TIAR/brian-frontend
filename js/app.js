@@ -31,12 +31,140 @@ let currentConvId = null;
 let ws = null;
 let adminCommands = {};
 
-async function initApp() {
-    // Request browser notification permissions if not already requested
-    if ("Notification" in window && Notification.permission === "default") {
-        // Many browsers require a user gesture, but we try anyway. Best practice is to request on login.
-        Notification.requestPermission();
+let swRegistration = null;
+
+// Synthesize audio chime for normal messages
+function playMessageChime() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+    } catch (e) {
+        console.warn("Audio chime error:", e);
     }
+}
+
+// Synthesize audio chime for escalation (urgent double beep)
+function playEscalationChime() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Tone 1
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(880, ctx.currentTime);
+        gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.2);
+
+        // Tone 2 (Higher, urgent pitch)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(1174.66, ctx.currentTime + 0.25);
+        gain2.gain.setValueAtTime(0.4, ctx.currentTime + 0.25);
+        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(ctx.currentTime + 0.25);
+        osc2.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+        console.warn("Escalation chime error:", e);
+    }
+}
+
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => {
+                swRegistration = reg;
+                console.log("Service Worker registered successfully.");
+            })
+            .catch(err => {
+                console.warn("Service Worker registration failed:", err);
+            });
+    }
+}
+
+function updateNotificationBellUI() {
+    const bellBtn = document.getElementById('enable-notifications-btn');
+    if (!bellBtn) return;
+    if ("Notification" in window) {
+        if (Notification.permission === 'granted') {
+            bellBtn.style.color = 'var(--accent-teal)';
+            bellBtn.title = 'Notifications Enabled';
+        } else if (Notification.permission === 'denied') {
+            bellBtn.style.color = 'var(--accent-red)';
+            bellBtn.title = 'Notifications Blocked in Browser Settings';
+        } else {
+            bellBtn.style.color = 'var(--text-muted)';
+            bellBtn.title = 'Click to Enable Notifications';
+        }
+    }
+}
+
+async function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        alert("This browser does not support web notifications.");
+        return;
+    }
+    try {
+        const permission = await Notification.requestPermission();
+        updateNotificationBellUI();
+        if (permission === 'granted') {
+            alert("Push notifications enabled!");
+        } else if (permission === 'denied') {
+            alert("Notification permission was denied. Please allow notifications in your browser/phone site settings.");
+        }
+    } catch (e) {
+        console.error("Failed to request notification permission:", e);
+    }
+}
+
+function showSystemNotification(title, options, phone) {
+    if (!("Notification" in window) || Notification.permission !== "granted") {
+        return;
+    }
+
+    const defaultOptions = {
+        icon: 'https://cdn-icons-png.flaticon.com/512/3602/3602145.png',
+        badge: 'https://cdn-icons-png.flaticon.com/512/3602/3602145.png',
+        vibrate: [200, 100, 200],
+        ...options
+    };
+
+    if (swRegistration && 'showNotification' in swRegistration) {
+        swRegistration.showNotification(title, defaultOptions);
+    } else {
+        const n = new Notification(title, defaultOptions);
+        n.onclick = () => {
+            window.focus();
+            if (phone && phone !== currentPhone) {
+                const appContainer = document.getElementById('app-container');
+                appContainer.classList.remove('view-sidebar', 'view-info');
+                appContainer.classList.add('view-main');
+                loadThread(phone);
+            }
+        };
+    }
+}
+
+async function initApp() {
+    registerServiceWorker();
+    updateNotificationBellUI();
 
     setupWebSocket();
     await loadConversations();
@@ -527,6 +655,9 @@ function setupEventListeners() {
         }
     });
 
+    // Notification Bell Listener
+    document.getElementById('enable-notifications-btn')?.addEventListener('click', requestNotificationPermission);
+
     // Settings Modal
     document.getElementById('open-settings-btn').addEventListener('click', openSettingsModal);
     document.getElementById('close-settings-btn').addEventListener('click', () => {
@@ -605,24 +736,31 @@ function handleNewMessageEvent(data) {
         loadThread(currentPhone);
     }
     
-    // Trigger notification if it's a guest message AND (we are on another thread OR the app is in the background)
-    if (data.role === 'user') {
+    const isEscalated = Boolean(data.escalated);
+
+    if (isEscalated) {
+        // ALWAYS trigger escalation chime and notification for escalation events regardless of message role
+        playEscalationChime();
+        showSystemNotification(
+            "🚨 ESCALATION ALERT: " + (data.phone || "Guest"),
+            {
+                body: data.escalation_reason || data.content || "Conversation escalated to HUMAN mode!",
+                tag: "escalation-" + data.phone
+            },
+            data.phone
+        );
+    } else if (data.role === 'user') {
+        // Normal guest message notification if not on current thread or tab is in background
         if (!isCurrentThread || document.hidden) {
-            if ("Notification" in window && Notification.permission === "granted") {
-                const notification = new Notification("New Message: " + data.phone, {
+            playMessageChime();
+            showSystemNotification(
+                "New Message: " + (data.phone || "Guest"),
+                {
                     body: data.content,
-                });
-                notification.onclick = () => {
-                    window.focus();
-                    if (!isCurrentThread) {
-                        // Switch to the thread and view the message
-                        const appContainer = document.getElementById('app-container');
-                        appContainer.classList.remove('view-sidebar', 'view-info');
-                        appContainer.classList.add('view-main');
-                        loadThread(data.phone);
-                    }
-                };
-            }
+                    tag: "msg-" + data.phone
+                },
+                data.phone
+            );
         }
     }
 
