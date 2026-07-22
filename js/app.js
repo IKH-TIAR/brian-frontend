@@ -230,6 +230,17 @@ async function loadConversations(search = '') {
     }
 }
 
+function formatCRTime(dateStr) {
+    if (!dateStr) return '';
+    let str = String(dateStr);
+    if (!str.endsWith('Z') && !str.includes('+') && !str.includes('Z')) {
+        str = str + 'Z';
+    }
+    const d = new Date(str);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' });
+}
+
 function renderConversationList(convs) {
     const list = document.getElementById('conversation-list');
     list.innerHTML = '';
@@ -240,7 +251,7 @@ function renderConversationList(convs) {
         div.dataset.phone = c.phone;
 
         const nameDisplay = c.name || c.phone;
-        const timeStr = c.last_message_at ? new Date(c.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' }) : '';
+        const timeStr = formatCRTime(c.last_message_at);
         const modeDotClass = c.mode === 'HUMAN' ? 'human' : 'bot';
 
         div.innerHTML = `
@@ -342,7 +353,7 @@ function buildMessageEl(msg) {
     const div = document.createElement('div');
     div.className = `message msg-${msg.role}`;
     div.dataset.id = msg.id;
-    const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' }) : '';
+    const timeStr = formatCRTime(msg.created_at);
     div.innerHTML = `${msg.content}<span class="time">${timeStr}</span>`;
     return div;
 }
