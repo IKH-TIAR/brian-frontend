@@ -506,6 +506,8 @@ function setupEventListeners() {
     document.getElementById('mobile-back-btn').addEventListener('click', () => {
         appContainer.classList.remove('view-main', 'view-info');
         appContainer.classList.add('view-sidebar');
+        currentPhone = null;
+        document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
     });
     document.getElementById('mobile-info-btn').addEventListener('click', () => {
         appContainer.classList.remove('view-sidebar', 'view-main');
@@ -729,7 +731,9 @@ function openCommandModal(cmd) {
 }
 
 function handleNewMessageEvent(data) {
-    const isCurrentThread = (data.phone === currentPhone);
+    const appContainer = document.getElementById('app-container');
+    const isMainViewActive = appContainer ? appContainer.classList.contains('view-main') : true;
+    const isCurrentThread = (data.phone === currentPhone) && isMainViewActive;
 
     // If we are looking at the thread, update it
     if (isCurrentThread) {
