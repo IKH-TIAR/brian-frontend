@@ -116,6 +116,19 @@ function updateNotificationBellUI() {
     }
 }
 
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
 async function requestNotificationPermission() {
     if (!("Notification" in window)) {
         alert("This browser does not support web notifications.");
@@ -124,8 +137,29 @@ async function requestNotificationPermission() {
     try {
         const permission = await Notification.requestPermission();
         updateNotificationBellUI();
+
         if (permission === 'granted') {
-            alert("Push notifications enabled!");
+            // Subscribe to Web Push via Service Worker & VAPID Key
+            if ('serviceWorker' in navigator && swRegistration) {
+                try {
+                    const res = await window.api.getVapidPublicKey();
+                    if (res && res.public_key) {
+                        const convertedVapidKey = urlBase64ToUint8Array(res.public_key);
+                        let sub = await swRegistration.pushManager.getSubscription();
+                        if (!sub) {
+                            sub = await swRegistration.pushManager.subscribe({
+                                userVisibleOnly: true,
+                                applicationServerKey: convertedVapidKey
+                            });
+                        }
+                        await window.api.subscribePush(sub.toJSON());
+                        console.log("Web Push subscription active & saved to backend!");
+                    }
+                } catch (pushErr) {
+                    console.warn("Could not register device Web Push token:", pushErr);
+                }
+            }
+            alert("Push notifications enabled! You will now receive offline alerts when the site is closed.");
         } else if (permission === 'denied') {
             alert("Notification permission was denied. Please allow notifications in your browser/phone site settings.");
         }
