@@ -343,6 +343,7 @@ async function loadOlderMessages() {
                 btn.remove();
             }
         }
+        lucide.createIcons();
     } catch (e) {
         console.error('Failed to load older messages:', e);
         if (btn) { btn.textContent = 'Load older messages'; btn.disabled = false; }
@@ -354,7 +355,31 @@ function buildMessageEl(msg) {
     div.className = `message msg-${msg.role}`;
     div.dataset.id = msg.id;
     const timeStr = formatCRTime(msg.created_at);
-    div.innerHTML = `${msg.content}<span class="time">${timeStr}</span>`;
+
+    let contentHtml = msg.content;
+    if (msg.media_url) {
+        const pwd = window.api ? window.api.password : '';
+        const tokenParam = pwd ? `?token=${encodeURIComponent(pwd)}` : '';
+        const baseUrl = API_BASE.replace(/\/api$/, '');
+        const imgUrl = `${baseUrl}${msg.media_url}${tokenParam}`;
+        const downloadUrl = `${imgUrl}${tokenParam ? '&' : '?'}download=true`;
+
+        contentHtml = `
+            <div class="chat-media-wrapper">
+                <a href="${imgUrl}" target="_blank" title="View Full Image">
+                    <img src="${imgUrl}" alt="WhatsApp Image" class="chat-media-img" loading="lazy" />
+                </a>
+                <div class="chat-media-info">
+                    ${msg.caption ? `<div class="chat-media-caption">${msg.caption}</div>` : ''}
+                    <a href="${downloadUrl}" download class="chat-media-download-btn">
+                        <i data-lucide="download" style="width: 14px; height: 14px;"></i> Download
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+
+    div.innerHTML = `${contentHtml}<span class="time">${timeStr}</span>`;
     return div;
 }
 
@@ -425,6 +450,8 @@ function renderThread(data) {
     } else {
         banner.classList.add('hidden');
     }
+
+    lucide.createIcons();
 
     // Reservation details
     const resDetails = document.getElementById('reservation-details');
