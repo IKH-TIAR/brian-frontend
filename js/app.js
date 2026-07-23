@@ -786,12 +786,13 @@ function handleNewMessageEvent(data) {
     }
     
     const isEscalated = Boolean(data.escalated);
+    const nameDisplay = (data.name && String(data.name).trim()) ? data.name.trim() : (data.phone || "Guest");
 
     if (isEscalated) {
         // ALWAYS trigger escalation chime and notification for escalation events regardless of message role
         playEscalationChime();
         showSystemNotification(
-            "🚨 ESCALATION ALERT: " + (data.phone || "Guest"),
+            "🚨 ESCALATION ALERT: " + nameDisplay,
             {
                 body: data.escalation_reason || data.content || "Conversation escalated to HUMAN mode!",
                 tag: "escalation-" + data.phone
@@ -803,7 +804,7 @@ function handleNewMessageEvent(data) {
         if (!isCurrentThread || document.hidden) {
             playMessageChime();
             showSystemNotification(
-                "New Message: " + (data.phone || "Guest"),
+                "New Message: " + nameDisplay,
                 {
                     body: data.content,
                     tag: "msg-" + data.phone
