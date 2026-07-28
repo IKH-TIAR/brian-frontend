@@ -238,7 +238,38 @@ function formatCRTime(dateStr) {
     }
     const d = new Date(str);
     if (isNaN(d.getTime())) return '';
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' });
+    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' });
+    const datePartStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Costa_Rica' });
+    return `${datePartStr}, ${timeStr}`;
+}
+
+function formatCRDateTime(dateStr) {
+    if (!dateStr) return '';
+    let str = String(dateStr);
+    if (!str.endsWith('Z') && !str.includes('+') && !str.includes('Z')) {
+        str = str + 'Z';
+    }
+    const d = new Date(str);
+    if (isNaN(d.getTime())) return '';
+    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' });
+    
+    // Get today and yesterday in Costa Rica timezone
+    const now = new Date();
+    const crFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Costa_Rica' });
+    const todayCR = crFormatter.format(now);
+    const dateCR = crFormatter.format(d);
+    
+    const yesterday = new Date(now.getTime() - 86400000);
+    const yesterdayCR = crFormatter.format(yesterday);
+    
+    if (dateCR === todayCR) {
+        return `Today ${timeStr}`;
+    } else if (dateCR === yesterdayCR) {
+        return `Yesterday ${timeStr}`;
+    } else {
+        const datePartStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Costa_Rica' });
+        return `${datePartStr}, ${timeStr}`;
+    }
 }
 
 function renderConversationList(convs) {
@@ -251,7 +282,7 @@ function renderConversationList(convs) {
         div.dataset.phone = c.phone;
 
         const nameDisplay = c.name || c.phone;
-        const timeStr = formatCRTime(c.last_message_at);
+        const timeStr = formatCRDateTime(c.last_message_at);
         const modeDotClass = c.mode === 'HUMAN' ? 'human' : 'bot';
 
         div.innerHTML = `
