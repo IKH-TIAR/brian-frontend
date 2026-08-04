@@ -154,6 +154,120 @@ class ApiClient {
             body: JSON.stringify({ endpoint })
         });
     }
+
+    // Pricing Management
+    async getPricingProperties() {
+        return this.request('/admin/pricing/properties');
+    }
+
+    async updatePricingProperty(id, data) {
+        return this.request(`/admin/pricing/properties/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updatePricingRatePlan(id, data) {
+        return this.request(`/admin/pricing/rate-plans/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async getPricingTiers() {
+        return this.request('/admin/pricing/tiers');
+    }
+
+    async getPricingSeasons() {
+        return this.request('/admin/pricing/seasons');
+    }
+
+    async createPricingSeason(data) {
+        return this.request('/admin/pricing/seasons', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updatePricingSeason(id, data) {
+        return this.request(`/admin/pricing/seasons/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async createSeasonPeriod(data) {
+        return this.request('/admin/pricing/season-periods', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateSeasonPeriod(id, data) {
+        return this.request(`/admin/pricing/season-periods/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteSeasonPeriod(id) {
+        return this.request(`/admin/pricing/season-periods/${encodeURIComponent(id)}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async getPricingMatrix() {
+        return this.request('/admin/pricing/matrix');
+    }
+
+    async updatePricingMatrix(items) {
+        return this.request('/admin/pricing/matrix', {
+            method: 'PUT',
+            body: JSON.stringify(items)
+        });
+    }
+
+    async bulkAdjustPrices(data) {
+        return this.request('/admin/pricing/matrix/bulk-adjust', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async getPromotions() {
+        return this.request('/admin/pricing/promotions');
+    }
+
+    async createPromotion(data) {
+        return this.request('/admin/pricing/promotions', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updatePromotion(id, data) {
+        return this.request(`/admin/pricing/promotions/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deletePromotion(id) {
+        return this.request(`/admin/pricing/promotions/${encodeURIComponent(id)}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async getPricingSettings() {
+        return this.request('/admin/pricing/settings');
+    }
+
+    async updatePricingSettings(data) {
+        return this.request('/admin/pricing/settings', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
 }
 
 window.api = new ApiClient();

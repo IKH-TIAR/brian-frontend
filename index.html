@@ -35,6 +35,10 @@
                             style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
                             <i data-lucide="bell"></i>
                         </button>
+                        <button class="icon-btn" id="open-pricing-btn" title="Pricing Management"
+                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                            <i data-lucide="dollar-sign"></i>
+                        </button>
                         <button class="icon-btn" id="open-bungalows-btn" title="Bungalow Codes"
                             style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
                             <i data-lucide="key"></i>
@@ -377,7 +381,289 @@
         </div>
     </div>
 
+    <!-- Pricing Management Main Modal -->
+    <div id="pricing-modal" class="modal">
+        <div class="modal-content pricing-modal-content">
+            <div class="modal-header">
+                <h2>Pricing Management</h2>
+                <button class="icon-btn close-modal" id="close-pricing-btn"><i data-lucide="x"></i></button>
+            </div>
+            
+            <div class="pricing-tabs">
+                <button class="pricing-tab-btn active" data-tab="properties">Properties & Fees</button>
+                <button class="pricing-tab-btn" data-tab="matrix">Seasonal Prices</button>
+                <button class="pricing-tab-btn" data-tab="seasons">Seasons & Dates</button>
+                <button class="pricing-tab-btn" data-tab="promotions">Promotions</button>
+                <button class="pricing-tab-btn" data-tab="settings">General Settings</button>
+            </div>
+
+            <div class="pricing-tab-container">
+                <!-- TAB 1: PROPERTIES & FEES -->
+                <div id="tab-pricing-properties" class="pricing-tab-panel active">
+                    <div class="tab-actions-bar">
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Manage properties, rate plans, capacities, fees, deposits, and active status.</p>
+                    </div>
+                    <div class="pricing-grid-wrapper">
+                        <table class="pricing-table">
+                            <thead>
+                                <tr>
+                                    <th>Property / Config</th>
+                                    <th>Cap (Std/Max)</th>
+                                    <th>Cleaning Fee</th>
+                                    <th>Extra Person/Nt</th>
+                                    <th>Deposit</th>
+                                    <th>Pets Allowed</th>
+                                    <th>Active</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pricing-properties-tbody"></tbody>
+                        </table>
+                        <div id="pricing-properties-cards" class="pricing-cards-container"></div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: SEASONAL PRICES MATRIX -->
+                <div id="tab-pricing-matrix" class="pricing-tab-panel">
+                    <div class="tab-actions-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                            <select id="matrix-property-filter" class="form-select-sm">
+                                <option value="">All Properties</option>
+                            </select>
+                            <select id="matrix-tier-filter" class="form-select-sm">
+                                <option value="">All Tiers (Intl & Local)</option>
+                                <option value="INTERNATIONAL">International USD</option>
+                                <option value="LOCAL">Local USD</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <button class="btn-secondary" id="bulk-adjust-btn" style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem;">
+                                <i data-lucide="sliders" style="width: 14px; height: 14px;"></i> Bulk Adjust Prices
+                            </button>
+                            <button class="btn-primary" id="save-matrix-btn" style="font-size: 0.85rem;">Save Prices</button>
+                        </div>
+                    </div>
+                    <div class="pricing-grid-wrapper">
+                        <table class="pricing-table matrix-table">
+                            <thead id="pricing-matrix-thead"></thead>
+                            <tbody id="pricing-matrix-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 3: SEASONS & DATES -->
+                <div id="tab-pricing-seasons" class="pricing-tab-panel">
+                    <div class="tab-actions-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Define seasons, priorities, and date ranges.</p>
+                        <button class="btn-primary" id="add-season-period-btn" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+                            <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Date Range
+                        </button>
+                    </div>
+                    <div id="seasons-container" class="seasons-list"></div>
+                </div>
+
+                <!-- TAB 4: PROMOTIONS -->
+                <div id="tab-pricing-promotions" class="pricing-tab-panel">
+                    <div class="tab-actions-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Create and manage special promotional prices.</p>
+                        <button class="btn-primary" id="add-promotion-btn" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+                            <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Promotion
+                        </button>
+                    </div>
+                    <div id="promotions-container" class="promotions-list"></div>
+                </div>
+
+                <!-- TAB 5: GENERAL SETTINGS -->
+                <div id="tab-pricing-settings" class="pricing-tab-panel">
+                    <form id="pricing-settings-form" style="max-width: 500px; margin-top: 1rem;">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Currency</label>
+                            <input type="text" id="ps-currency" value="USD" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Default Pet Fee (per stay)</label>
+                            <input type="number" step="0.01" min="0" id="ps-pet-fee" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Default Extra-Person Fee (per person / night)</label>
+                            <input type="number" step="0.01" min="0" id="ps-extra-person-fee" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Multi-Property Refundable Deposit</label>
+                            <input type="number" step="0.01" min="0" id="ps-deposit" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        </div>
+                        <button type="submit" id="save-pricing-settings-btn" class="btn-primary">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sub-Modal 1: Edit Rate Plan -->
+    <div id="rate-plan-edit-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="rate-plan-edit-title">Edit Configuration</h3>
+            <form id="rate-plan-edit-form">
+                <input type="hidden" id="rpe-plan-id">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary);">Configuration Name</label>
+                    <input type="text" id="rpe-name" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Standard Capacity</label>
+                        <input type="number" min="1" id="rpe-std-cap" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Maximum Capacity</label>
+                        <input type="number" min="1" id="rpe-max-cap" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Cleaning Fee ($)</label>
+                        <input type="number" step="0.01" min="0" id="rpe-cleaning-fee" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Extra Person Fee/Nt ($)</label>
+                        <input type="number" step="0.01" min="0" id="rpe-extra-person-fee" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary);">Refundable Deposit ($)</label>
+                    <input type="number" step="0.01" min="0" id="rpe-deposit" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <label class="checkbox-label" style="margin-bottom: 0;">
+                        <input type="checkbox" id="rpe-pets-allowed"> Pets Allowed
+                    </label>
+                    <label class="checkbox-label" style="margin-bottom: 0;">
+                        <input type="checkbox" id="rpe-active"> Active
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-rpe-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="save-rpe-btn" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sub-Modal 2: Bulk Price Adjustment -->
+    <div id="bulk-adjust-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>Bulk Price Adjustment</h3>
+            <form id="bulk-adjust-form">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary);">Adjustment Type</label>
+                    <select id="ba-type" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        <option value="percent_increase">Increase by Percentage (%)</option>
+                        <option value="percent_decrease">Decrease by Percentage (%)</option>
+                        <option value="fixed_increase">Increase by Fixed Amount ($)</option>
+                        <option value="fixed_decrease">Decrease by Fixed Amount ($)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary);">Value / Amount</label>
+                    <input type="number" step="0.01" min="0" id="ba-amount" placeholder="e.g. 10" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary);">Target Pricing Tiers</label>
+                    <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+                        <label class="checkbox-label" style="margin-bottom: 0;"><input type="checkbox" id="ba-tier-intl" checked> International</label>
+                        <label class="checkbox-label" style="margin-bottom: 0;"><input type="checkbox" id="ba-tier-local" checked> Local</label>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Target Seasons</label>
+                    <div id="ba-seasons-checkboxes" style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 120px; overflow-y: auto; background: var(--bg-dark); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border);"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-ba-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="apply-ba-btn" class="btn-primary">Apply Adjustment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sub-Modal 3: Season Period Add/Edit -->
+    <div id="season-period-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="sp-modal-title">Add Season Date Range</h3>
+            <form id="season-period-form">
+                <input type="hidden" id="sp-edit-id">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary);">Season</label>
+                    <select id="sp-season-select" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;"></select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Start Date *</label>
+                        <input type="date" id="sp-start-date" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">End Date *</label>
+                        <input type="date" id="sp-end-date" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary);">Notes (optional)</label>
+                    <input type="text" id="sp-notes" placeholder="e.g. Easter Week 2026" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-sp-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="save-sp-btn" class="btn-primary">Save Range</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sub-Modal 4: Promotion Form -->
+    <div id="promotion-form-modal" class="modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <h3 id="promo-modal-title">Add Promotion</h3>
+            <form id="promotion-form">
+                <input type="hidden" id="promo-edit-id">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary);">Promotion Name *</label>
+                    <input type="text" id="promo-name" required placeholder="e.g. July–November 2026 Promotion" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary);">Description</label>
+                    <input type="text" id="promo-desc" placeholder="Flat promotional rates for selected properties" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Start Date *</label>
+                        <input type="date" id="promo-start-date" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">End Date *</label>
+                        <input type="date" id="promo-end-date" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem;">
+                    <label class="checkbox-label" style="margin-bottom: 0;">
+                        <input type="checkbox" id="promo-enabled" checked> Enable Promotion
+                    </label>
+                    <label class="checkbox-label" style="margin-bottom: 0;">
+                        <input type="checkbox" id="promo-waive-pet"> Waive Pet Fee
+                    </label>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block;">Participating Properties & Promotional Rates ($)</label>
+                    <div id="promo-properties-list" style="max-height: 200px; overflow-y: auto; background: var(--bg-dark); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-promo-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="save-promo-btn" class="btn-primary">Save Promotion</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="js/api.js?v=6"></script>
+    <script src="js/pricing.js?v=1"></script>
     <script src="js/app.js?v=6"></script>
 </body>
 

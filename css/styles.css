@@ -984,3 +984,339 @@ input:checked + .slider:before { transform: translateX(18px); }
         gap: 0 !important;
     }
 }
+
+/* ── Pricing Management Styles ── */
+.pricing-modal-content {
+    max-width: 1200px;
+    width: 95vw;
+    height: 90vh;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+}
+
+.pricing-tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.pricing-tab-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pricing-tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.pricing-tab-btn.active {
+    color: var(--accent-teal);
+    border-bottom-color: var(--accent-teal);
+}
+
+.pricing-tab-container {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.pricing-tab-panel {
+    display: none;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.pricing-tab-panel.active {
+    display: flex;
+}
+
+.pricing-grid-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    min-width: 750px;
+}
+
+.pricing-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bg-dark);
+}
+
+.pricing-table th {
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+
+.pricing-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+.pricing-table tbody tr:hover {
+    background: var(--bg-hover);
+}
+
+.matrix-table input.matrix-price-input {
+    width: 80px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: right;
+}
+
+.matrix-table input.matrix-price-input.modified {
+    border-color: var(--accent-orange);
+    background: rgba(234, 88, 12, 0.15);
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-delete {
+    background: rgba(220, 38, 38, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.btn-delete:hover {
+    background: var(--accent-red);
+    color: white;
+}
+
+.form-select-sm {
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+}
+
+/* Seasons List */
+.seasons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.season-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.season-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.season-card-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--accent-teal);
+}
+
+.season-card-code {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-left: 4px;
+}
+
+.season-card-priority {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-left: 10px;
+    background: var(--bg-hover);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.periods-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.period-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-panel);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.period-notes {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-left: 6px;
+}
+
+.overlap-warning-badge {
+    font-size: 0.7rem;
+    background: rgba(234, 88, 12, 0.2);
+    color: #fdba74;
+    border: 1px solid rgba(234, 88, 12, 0.4);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+/* Promotions List */
+.promotions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.promotion-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.promotion-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.promotion-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-right: 8px;
+}
+
+.promo-prices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    background: var(--bg-panel);
+    padding: 0.5rem;
+    border-radius: 6px;
+}
+
+.promo-price-chip {
+    font-size: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 8px;
+    background: var(--bg-dark);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.pricing-cards-container {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .pricing-modal-content {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        border-radius: 0;
+        padding: 1rem;
+    }
+
+    .pricing-table:not(.matrix-table) {
+        display: none;
+    }
+
+    .pricing-cards-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.5rem;
+    }
+
+    .pricing-card {
+        background: var(--bg-dark);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.75rem;
+    }
+
+    .pricing-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.4rem;
+    }
+
+    .pricing-card-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--accent-teal);
+    }
+
+    .pricing-card-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        padding: 3px 0;
+        color: var(--text-secondary);
+    }
+
+    .pricing-card-row span:last-child {
+        color: var(--text-primary);
+    }
+}
+
