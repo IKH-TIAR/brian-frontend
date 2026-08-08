@@ -594,7 +594,7 @@ function renderPricingPromotions() {
             promo.property_prices.forEach(pp => {
                 pricesListHtml += `
                     <div class="promo-price-chip">
-                        <span>${escapeHtml(pp.rate_plan_name || pp.rate_plan_code)}:</span>
+                        <span>${escapeHtml(pp.display_name || pp.property_name || pp.rate_plan_code)}:</span>
                         <strong style="color: var(--accent-teal);">$${pp.nightly_rate.toFixed(2)}</strong>
                     </div>
                 `;
