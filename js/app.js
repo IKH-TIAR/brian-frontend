@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
     // Check Auth
     const pwd = localStorage.getItem('hbb_admin_pwd');
@@ -26,17 +26,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+let appInitialized = false;
+
 let currentPhone = null;
 let currentConvId = null;
 let ws = null;
+let wsReconnectTimer = null;
+let wsAttempts = 0;
+let wsLastMessageAt = Date.now();
 let adminCommands = {};
 
 let swRegistration = null;
 
+// Shared AudioContext — creating one per chime leaked contexts until the
+// browser hard-capped them (~6) and notification sounds silently died.
+let audioCtx = null;
+function getAudioCtx() {
+    if (!audioCtx) {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            return null;
+        }
+    }
+    if (audioCtx.state === 'suspended') {
+        try { audioCtx.resume(); } catch (e) {}
+    }
+    return audioCtx;
+}
+
 // Synthesize audio chime for normal messages
 function playMessageChime() {
     try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = getAudioCtx();
+        if (!ctx) return;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
@@ -56,7 +79,8 @@ function playMessageChime() {
 // Synthesize audio chime for escalation (urgent double beep)
 function playEscalationChime() {
     try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = getAudioCtx();
+        if (!ctx) return;
         
         // Tone 1
         const osc1 = ctx.createOscillator();
@@ -87,7 +111,7 @@ function playEscalationChime() {
 }
 
 function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
         navigator.serviceWorker.register('/sw.js')
             .then(reg => {
                 swRegistration = reg;
@@ -197,38 +221,115 @@ function showSystemNotification(title, options, phone) {
 }
 
 async function initApp() {
+    if (appInitialized) return; // guards against re-entry via the login form
+    appInitialized = true;
+
     registerServiceWorker();
     updateNotificationBellUI();
 
-    setupWebSocket();
-    await loadConversations();
-    await loadCommands();
+    // UI listeners work immediately — not gated behind network calls
     setupEventListeners();
+
+    // Independent fetches run in parallel
+    await Promise.all([loadConversations(), loadCommands()]);
 }
 
 function setupWebSocket() {
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+
+    // Null out handlers on any previous socket so its closures are released
+    if (ws) {
+        ws.onmessage = null;
+        ws.onclose = null;
+        ws.onerror = null;
+        try { ws.close(); } catch (e) {}
+    }
+
     ws = new WebSocket(WS_BASE);
+    wsAttempts++;
 
     ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'new_message') {
-            handleNewMessageEvent(msg.data);
+        wsAttempts = 0;
+        wsLastMessageAt = Date.now();
+        try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'new_message') {
+                handleNewMessageEvent(msg.data);
+            }
+        } catch (e) {
+            console.warn("Bad WS payload:", e);
         }
     };
 
     ws.onclose = () => {
-        setTimeout(setupWebSocket, 5000); // Reconnect
+        if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
+        // Exponential backoff with jitter (2s → ~32s max), avoids reconnect storms
+        const delay = Math.min(30000, 2000 * Math.pow(2, Math.min(wsAttempts - 1, 4))) + Math.random() * 1000;
+        wsReconnectTimer = setTimeout(setupWebSocket, delay);
+    };
+
+    ws.onerror = () => {
+        try { ws.close(); } catch (e) {}
     };
 }
 
-async function loadConversations(search = '') {
+// Heartbeat: server replies {"type":"pong"} to our ping, so a half-open
+// connection is detected and re-established instead of silently stalling.
+setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        try { ws.send(JSON.stringify({ type: 'ping' })); } catch (e) {}
+        if (Date.now() - wsLastMessageAt > 90000) {
+            try { ws.close(); } catch (e) {}
+        }
+    }
+}, 30000);
+
+let conversationPage = { search: '', before: null, hasMore: false };
+
+async function loadConversations(search = '', append = false) {
+    if (!append) {
+        conversationPage = { search: search || '', before: null, hasMore: false };
+    }
     try {
-        const convs = await window.api.getConversations(search);
-        renderConversationList(convs);
+        const data = await window.api.getConversations(conversationPage.search, conversationPage.before);
+        const convs = data.conversations || [];
+        conversationPage.hasMore = Boolean(data.has_more);
+        if (convs.length > 0) {
+            const last = convs[convs.length - 1];
+            conversationPage.before = `${last.last_message_at}|${last.conversation_id}`;
+        }
+        renderConversationList(convs, append);
+        updateLoadMoreButton();
     } catch (e) {
         console.error("Failed to load conversations:", e);
     }
 }
+
+async function loadMoreConversations() {
+    await loadConversations('', true);
+}
+
+function updateLoadMoreButton() {
+    let btn = document.getElementById('load-more-convs-btn');
+    if (conversationPage.hasMore) {
+        if (!btn) {
+            btn = document.createElement('button');
+            btn.id = 'load-more-convs-btn';
+            btn.textContent = 'Load more conversations';
+            btn.style.cssText = 'display:block;width:100%;padding:8px;margin-top:8px;font-size:0.8rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);cursor:pointer;';
+            btn.addEventListener('click', loadMoreConversations);
+            document.getElementById('conversation-list').appendChild(btn);
+        }
+        btn.style.display = 'block';
+    } else if (btn) {
+        btn.style.display = 'none';
+    }
+}
+
+// Hoisted formatters — previously built ~5 Intl objects per row per render
+const CR_TIME_FMT = new Intl.DateTimeFormat([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' });
+const CR_DATE_FMT = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Costa_Rica' });
+const CR_FULL_DATE_FMT = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Costa_Rica' });
 
 function formatCRTime(dateStr) {
     if (!dateStr) return '';
@@ -238,8 +339,8 @@ function formatCRTime(dateStr) {
     }
     const d = new Date(str);
     if (isNaN(d.getTime())) return '';
-    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' });
-    const datePartStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Costa_Rica' });
+    const timeStr = CR_TIME_FMT.format(d);
+    const datePartStr = CR_DATE_FMT.format(d);
     return `${datePartStr}, ${timeStr}`;
 }
 
@@ -251,56 +352,55 @@ function formatCRDateTime(dateStr) {
     }
     const d = new Date(str);
     if (isNaN(d.getTime())) return '';
-    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Costa_Rica' });
+    const timeStr = CR_TIME_FMT.format(d);
     
     // Get today and yesterday in Costa Rica timezone
     const now = new Date();
-    const crFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Costa_Rica' });
-    const todayCR = crFormatter.format(now);
-    const dateCR = crFormatter.format(d);
+    const todayCR = CR_FULL_DATE_FMT.format(now);
+    const dateCR = CR_FULL_DATE_FMT.format(d);
     
     const yesterday = new Date(now.getTime() - 86400000);
-    const yesterdayCR = crFormatter.format(yesterday);
+    const yesterdayCR = CR_FULL_DATE_FMT.format(yesterday);
     
     if (dateCR === todayCR) {
         return `Today ${timeStr}`;
     } else if (dateCR === yesterdayCR) {
         return `Yesterday ${timeStr}`;
     } else {
-        const datePartStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Costa_Rica' });
+        const datePartStr = CR_DATE_FMT.format(d);
         return `${datePartStr}, ${timeStr}`;
     }
 }
 
-function renderConversationList(convs) {
-    const list = document.getElementById('conversation-list');
-    list.innerHTML = '';
-
-    convs.forEach(c => {
-        const div = document.createElement('div');
-        div.className = `conv-item ${c.phone === currentPhone ? 'active' : ''} ${c.is_escalated ? 'escalated' : ''}`;
-        div.dataset.phone = c.phone;
-
-        const nameDisplay = c.name || c.phone;
-        const timeStr = formatCRDateTime(c.last_message_at);
-        const modeDotClass = c.mode === 'HUMAN' ? 'human' : 'bot';
-
-        div.innerHTML = `
+function conversationItemHTML(c) {
+    const nameDisplay = c.name || c.phone;
+    const timeStr = formatCRDateTime(c.last_message_at);
+    const modeDotClass = c.mode === 'HUMAN' ? 'human' : 'bot';
+    const unread = parseInt(c.unread_count || 0, 10);
+    return `
+        <div class="conv-item ${c.phone === currentPhone ? 'active' : ''} ${c.is_escalated ? 'escalated' : ''}" data-phone="${escapeHtml(c.phone)}" data-name="${escapeHtml(c.name || '')}" data-unread="${unread}">
             <div class="conv-header">
                 <span class="conv-name"><span class="status-dot ${modeDotClass}"></span>${nameDisplay}</span>
                 <span class="conv-time">${timeStr}</span>
             </div>
-            <div class="conv-preview">${c.latest_message_role === 'assistant' ? '🤖 ' : ''}${c.latest_message_role === 'admin' ? '👤 ' : ''}${c.latest_message}</div>
+            <div class="conv-preview">${c.latest_message_role === 'assistant' ? '🤖 ' : ''}${c.latest_message_role === 'admin' ? '👤 ' : ''}${escapeHtml(c.latest_message || '')}</div>
             <div class="badges">
                 ${!c.name ? '<span class="badge lead">Lead</span>' : '<span class="badge client">Client</span>'}
                 ${c.is_returning ? '<span class="badge returning">Returning</span>' : ''}
-                ${c.unread_count > 0 ? `<span class="badge unread">${c.unread_count} Unread</span>` : ''}
+                ${unread > 0 ? `<span class="badge unread">${unread} Unread</span>` : ''}
             </div>
-        `;
+        </div>
+    `;
+}
 
-        div.addEventListener('click', () => loadThread(c.phone));
-        list.appendChild(div);
-    });
+function renderConversationList(convs, append = false) {
+    const list = document.getElementById('conversation-list');
+    const html = convs.map(conversationItemHTML).join('');
+    if (append) {
+        list.insertAdjacentHTML('beforeend', html);
+    } else {
+        list.innerHTML = html;
+    }
 }
 
 async function loadThread(phone) {
@@ -374,7 +474,7 @@ async function loadOlderMessages() {
                 btn.remove();
             }
         }
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons({}, list);
     } catch (e) {
         console.error('Failed to load older messages:', e);
         if (btn) { btn.textContent = 'Load older messages'; btn.disabled = false; }
@@ -462,13 +562,15 @@ function renderThread(data) {
     let isEscalated = false;
     let escReason = "";
 
+    const fragment = document.createDocumentFragment();
     messages.forEach(msg => {
-        list.appendChild(buildMessageEl(msg));
+        fragment.appendChild(buildMessageEl(msg));
         if (msg.escalated && msg.role === 'assistant' && isHuman) {
             isEscalated = true;
             escReason = msg.escalation_reason || "Check messages";
         }
     });
+    list.appendChild(fragment);
 
     // Scroll to bottom
     list.scrollTop = list.scrollHeight;
@@ -482,7 +584,7 @@ function renderThread(data) {
         banner.classList.add('hidden');
     }
 
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons({}, document.getElementById('thread-view'));
 
     // Reservation details
     const resDetails = document.getElementById('reservation-details');
@@ -529,6 +631,27 @@ function renderCommands() {
 }
 
 function setupEventListeners() {
+    // Delegated conversation-list click — one listener for all rows
+    // (per-row listeners were rebuilt and leaked on every list refresh)
+    document.getElementById('conversation-list').addEventListener('click', (e) => {
+        const item = e.target.closest('.conv-item');
+        if (item) loadThread(item.dataset.phone);
+    });
+
+    // Lazy-load the pricing module (34.5 KB) on first use
+    let pricingJsLoaded = false;
+    document.getElementById('open-pricing-btn').addEventListener('click', () => {
+        if (pricingJsLoaded) return; // pricing.js binds its own handler after load
+        const s = document.createElement('script');
+        s.src = 'js/pricing.js?v=7';
+        s.onload = () => {
+            pricingJsLoaded = true;
+            if (typeof openPricingModal === 'function') openPricingModal();
+        };
+        s.onerror = () => alert('Failed to load the pricing module. Check your connection.');
+        document.body.appendChild(s);
+    });
+
     // Search
     let searchTimeout;
     document.getElementById('search-input').addEventListener('input', (e) => {
@@ -569,7 +692,7 @@ function setupEventListeners() {
         } finally {
             btn.disabled = false;
             btn.innerHTML = origHTML;
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons({}, btn);
         }
     });
 
@@ -593,14 +716,14 @@ function setupEventListeners() {
                 loadConversations(document.getElementById('search-input').value);
                 btn.disabled = false;
                 btn.innerHTML = origHTML;
-                lucide.createIcons();
+                if (window.lucide) lucide.createIcons({}, btn);
             }, 1000);
         } catch (err) {
             console.error("Failed to clear history", err);
             alert("Failed to clear history");
             btn.disabled = false;
             btn.innerHTML = origHTML;
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons({}, btn);
         }
     });
 
@@ -838,11 +961,14 @@ function handleNewMessageEvent(data) {
     const isMainViewActive = appContainer ? appContainer.classList.contains('view-main') : true;
     const isCurrentThread = (data.phone === currentPhone) && isMainViewActive;
 
-    // If we are looking at the thread, update it
+    // Update the open thread in place — no full re-fetch, no history wipe
     if (isCurrentThread) {
-        loadThread(currentPhone);
+        appendMessageToThread(data);
     }
-    
+
+    // Update the sidebar item in place — no full conversation-list re-fetch
+    upsertConversationItem(data, isCurrentThread);
+
     const isEscalated = Boolean(data.escalated);
     const nameDisplay = (data.name && String(data.name).trim()) ? data.name.trim() : (data.phone || "Guest");
 
@@ -871,9 +997,71 @@ function handleNewMessageEvent(data) {
             );
         }
     }
+}
 
-    // Refresh conversation list to show new preview and push to top
-    loadConversations(document.getElementById('search-input').value);
+function appendMessageToThread(data) {
+    const list = document.getElementById('message-list');
+    if (!list) return;
+    // Dedupe — the same message may arrive via WS more than once
+    if (list.querySelector(`.message[data-id="${data.id}"]`)) return;
+
+    const wasNearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 200;
+
+    list.appendChild(buildMessageEl({
+        id: data.id,
+        role: data.role,
+        content: data.content,
+        created_at: data.created_at,
+        escalated: data.escalated,
+        escalation_reason: data.escalation_reason
+    }));
+
+    if (wasNearBottom) {
+        list.scrollTop = list.scrollHeight;
+    }
+
+    // Update escalation banner if this message escalates the conversation
+    if (data.escalated) {
+        document.getElementById('escalation-reason-text').textContent = data.escalation_reason || "Check messages";
+        document.getElementById('escalation-banner').classList.remove('hidden');
+    }
+    if (window.lucide) lucide.createIcons({}, list);
+}
+
+function upsertConversationItem(data, isCurrentThread) {
+    const list = document.getElementById('conversation-list');
+    if (!list) return;
+
+    const selector = `[data-phone="${data.phone.replace(/"/g, '\\"')}"]`;
+    const existing = list.querySelector(`.conv-item${selector}`);
+    const prevUnread = existing ? parseInt(existing.dataset.unread || '0', 10) : 0;
+
+    // If the open thread is on screen, the backend marks messages read — don't bump the badge
+    const unread = (data.role === 'user' && !isCurrentThread) ? prevUnread + 1 : prevUnread;
+
+    const itemData = {
+        phone: data.phone,
+        name: data.name || (existing ? existing.dataset.name : ''),
+        is_returning: false,
+        mode: data.contact_mode || (existing ? (existing.querySelector('.status-dot')?.classList.contains('human') ? 'HUMAN' : 'BOT') : 'BOT'),
+        last_message_at: data.created_at || new Date().toISOString(),
+        latest_message: data.content,
+        latest_message_role: data.role,
+        unread_count: unread,
+        is_escalated: Boolean(data.escalated)
+    };
+
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = conversationItemHTML(itemData);
+    const node = wrapper.firstElementChild;
+
+    if (existing) {
+        existing.replaceWith(node);
+    } else {
+        list.prepend(node);
+    }
+    // Keep the node's data-name in sync for later upserts
+    node.dataset.name = data.name || '';
 }
 
 // Settings Configuration Logic
@@ -957,9 +1145,16 @@ async function saveCommandConfig() {
         submitBtn.style.background = 'var(--success-bg)';
         submitBtn.style.color = 'var(--success-text)';
 
-
-        await loadSettingsCommands();
-        await loadCommands();
+        // Update in-memory state instead of 2 full refetches
+        const configEntry = allCommandsConfig.find(c => c.id === id);
+        allCommandsConfig = allCommandsConfig.map(c => c.id === id ? { ...c, ...data } : c);
+        renderSettingsSidebar();
+        if (configEntry) {
+            Object.keys(adminCommands).forEach(cat => {
+                adminCommands[cat] = adminCommands[cat].map(c => c.command === configEntry.command ? { ...c, label: data.label } : c);
+            });
+            renderCommands();
+        }
 
         setTimeout(() => {
             submitBtn.textContent = originalText;
@@ -1006,7 +1201,7 @@ function renderBungalowTable() {
     if (allBungalows.length === 0) {
         table.style.display = 'none';
         empty.style.display = 'block';
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons({}, wrapper);
         return;
     }
 
@@ -1063,7 +1258,7 @@ function renderBungalowTable() {
         wrapper.appendChild(card);
     });
 
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons({}, wrapper);
 }
 
 function escapeHtml(str) {

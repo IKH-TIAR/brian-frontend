@@ -35,9 +35,12 @@ class ApiClient {
     }
 
     // Conversations
-    async getConversations(search = '') {
-        const query = search ? `?search=${encodeURIComponent(search)}` : '';
-        return this.request(`/conversations${query}`);
+    async getConversations(search = '', before = null) {
+        const params = new URLSearchParams();
+        if (search) params.set('search', search);
+        if (before) params.set('before', before);
+        const qs = params.toString();
+        return this.request(`/conversations${qs ? '?' + qs : ''}`);
     }
 
     async getConversationThread(phone, before = null) {

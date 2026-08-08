@@ -1,9 +1,62 @@
+const CACHE_NAME = 'hbb-static-v1';
+const STATIC_ASSETS = [
+  './',
+  './index.html',
+  './css/styles.css?v=5',
+  './js/api.js?v=7',
+  './js/app.js?v=7',
+  './manifest.json',
+];
+
 self.addEventListener('install', (event) => {
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).catch(() => {})
+  );
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET') return;
+  // Never cache API calls or the WebSocket
+  if (url.origin !== location.origin) return;
+  if (url.pathname.startsWith('/api/') || url.pathname === '/ws' || url.pathname.endsWith('/sw.js')) return;
+
+  if (url.pathname === '/') {
+    // Network-first for the HTML shell (cache fallback when offline)
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response && response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache-first for static assets, refreshed in the background
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      const fetched = fetch(event.request).then((response) => {
+        if (response && response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => cached);
+      return cached || fetched;
+    })
+  );
 });
 
 self.addEventListener('push', (event) => {

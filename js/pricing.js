@@ -1,4 +1,5 @@
-document.addEventListener('DOMContentLoaded', () => {
+// Runs on first paint AND when lazy-loaded on first modal open
+function initPricingModule() {
     // Open/Close Pricing Modal
     const openBtn = document.getElementById('open-pricing-btn');
     const closeBtn = document.getElementById('close-pricing-btn');
@@ -35,7 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('bulk-adjust-btn')?.addEventListener('click', openBulkAdjustModal);
     document.getElementById('add-season-period-btn')?.addEventListener('click', () => openSeasonPeriodModal());
     document.getElementById('add-promotion-btn')?.addEventListener('click', () => openPromotionModal());
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPricingModule);
+} else {
+    initPricingModule();
+}
 
 let currentPropertiesData = [];
 let currentMatrixData = null;
@@ -67,7 +74,7 @@ async function loadTabContent(tab) {
         } else if (tab === 'settings') {
             await loadPricingSettings();
         }
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide) lucide.createIcons({}, document.getElementById('pricing-modal'));
     } catch (e) {
         console.error(`Failed loading tab ${tab}:`, e);
     }
@@ -77,7 +84,11 @@ async function loadTabContent(tab) {
 // 1. PROPERTIES & RATE PLANS TAB
 // ==================================================
 
-async function loadPricingProperties() {
+async function loadPricingProperties(force = false) {
+    if (!force && currentPropertiesData.length > 0) {
+        renderPricingProperties();
+        return;
+    }
     currentPropertiesData = await window.api.getPricingProperties();
     renderPricingProperties();
 }
@@ -188,7 +199,7 @@ function setupRatePlanEditForm() {
             try {
                 await window.api.updatePricingRatePlan(planId, data);
                 document.getElementById('rate-plan-edit-modal').classList.remove('active');
-                await loadPricingProperties();
+                await loadPricingProperties(true);
             } catch (err) {
                 alert("Failed to update rate plan: " + err.message);
             }
@@ -200,7 +211,12 @@ function setupRatePlanEditForm() {
 // 2. SEASONAL PRICES MATRIX TAB
 // ==================================================
 
-async function loadPricingMatrix() {
+async function loadPricingMatrix(force = false) {
+    if (!force && currentMatrixData) {
+        populateMatrixFilters();
+        renderPricingMatrix();
+        return;
+    }
     currentMatrixData = await window.api.getPricingMatrix();
     modifiedMatrixPrices = {};
     populateMatrixFilters();
@@ -239,10 +255,11 @@ function renderPricingMatrix() {
 
     // Build Header Row
     const headerTr = document.createElement('tr');
-    headerTr.innerHTML = '<th>Property / Configuration</th><th>Tier</th>';
+    let headerCells = '<th>Property / Configuration</th><th>Tier</th>';
     currentMatrixData.seasons.forEach(s => {
-        headerTr.innerHTML += `<th>${escapeHtml(s.name)}</th>`;
+        headerCells += `<th>${escapeHtml(s.name)}</th>`;
     });
+    headerTr.innerHTML = headerCells;
     thead.appendChild(headerTr);
 
     // Build Body Rows
@@ -286,7 +303,7 @@ function renderPricingMatrix() {
         });
     });
 
-    if (window.lucide) lucide.createIcons();
+    if (window.lucide) lucide.createIcons({}, document.getElementById('pricing-modal'));
 }
 
 function onMatrixPriceChange(inputEl) {
@@ -326,7 +343,7 @@ async function savePricingMatrix() {
     try {
         await window.api.updatePricingMatrix(items);
         modifiedMatrixPrices = {};
-        await loadPricingMatrix();
+        await loadPricingMatrix(true);
         alert("Seasonal prices updated successfully!");
     } catch (e) {
         alert("Failed to save prices: " + e.message);
@@ -401,7 +418,7 @@ function setupBulkAdjustForm() {
                     tier_codes: tierCodes
                 });
                 document.getElementById('bulk-adjust-modal').classList.remove('active');
-                await loadPricingMatrix();
+                await loadPricingMatrix(true);
                 alert(`Bulk adjustment applied to ${res.updated_count} price records!`);
             } catch (err) {
                 alert("Bulk adjustment failed: " + err.message);
@@ -417,7 +434,11 @@ function setupBulkAdjustForm() {
 // 3. SEASONS & DATES TAB
 // ==================================================
 
-async function loadPricingSeasons() {
+async function loadPricingSeasons(force = false) {
+    if (!force && currentSeasonsData.length > 0) {
+        renderPricingSeasons();
+        return;
+    }
     currentSeasonsData = await window.api.getPricingSeasons();
     renderPricingSeasons();
 }
@@ -543,7 +564,7 @@ function setupSeasonPeriodForm() {
                     await window.api.createSeasonPeriod({ season_id: seasonId, start_date: startDate, end_date: endDate, notes: notes });
                 }
                 document.getElementById('season-period-modal').classList.remove('active');
-                await loadPricingSeasons();
+                await loadPricingSeasons(true);
             } catch (err) {
                 alert("Failed to save date range: " + err.message);
             }
@@ -555,7 +576,7 @@ async function deleteSeasonPeriod(periodId) {
     if (!confirm("Are you sure you want to remove this date range?")) return;
     try {
         await window.api.deleteSeasonPeriod(periodId);
-        await loadPricingSeasons();
+        await loadPricingSeasons(true);
     } catch (e) {
         alert("Failed to delete date range: " + e.message);
     }
@@ -565,7 +586,11 @@ async function deleteSeasonPeriod(periodId) {
 // 4. PROMOTIONS TAB
 // ==================================================
 
-async function loadPricingPromotions() {
+async function loadPricingPromotions(force = false) {
+    if (!force && currentPromotionsData.length > 0) {
+        renderPricingPromotions();
+        return;
+    }
     currentPromotionsData = await window.api.getPromotions();
     if (currentPropertiesData.length === 0) {
         currentPropertiesData = await window.api.getPricingProperties();
@@ -754,7 +779,7 @@ function setupPromotionForm() {
                     await window.api.createPromotion(payload);
                 }
                 document.getElementById('promotion-form-modal').classList.remove('active');
-                await loadPricingPromotions();
+                await loadPricingPromotions(true);
             } catch (err) {
                 alert("Failed to save promotion: " + err.message);
             }
@@ -766,7 +791,7 @@ async function deletePromotion(promoId) {
     if (!confirm("Are you sure you want to delete this promotion?")) return;
     try {
         await window.api.deletePromotion(promoId);
-        await loadPricingPromotions();
+        await loadPricingPromotions(true);
     } catch (e) {
         alert("Failed to delete promotion: " + e.message);
     }
@@ -819,3 +844,5 @@ function escapeHtml(str) {
     div.textContent = str;
     return div.innerHTML;
 }
+// Note: escapeHtml is also declared in app.js (loaded before this module);
+// both implementations are identical.
