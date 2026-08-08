@@ -49,19 +49,44 @@ let currentMatrixData = null;
 let currentSeasonsData = [];
 let currentPromotionsData = [];
 let modifiedMatrixPrices = {};
+let pricingModalOpening = false;
 
 async function openPricingModal() {
-    document.getElementById('pricing-modal').classList.add('active');
-    // Default to active tab
-    const activeTab = document.querySelector('.pricing-tab-btn.active')?.dataset.tab || 'properties';
-    await loadTabContent(activeTab);
+    if (pricingModalOpening) return; // guard against rapid double-clicks
+    pricingModalOpening = true;
+    try {
+        document.getElementById('pricing-modal').classList.add('active');
+        // Default to active tab
+        const activeTab = document.querySelector('.pricing-tab-btn.active')?.dataset.tab || 'properties';
+        await loadTabContent(activeTab);
+    } finally {
+        pricingModalOpening = false;
+    }
 }
 
 function closePricingModal() {
     document.getElementById('pricing-modal').classList.remove('active');
 }
 
+function tabDataCached(tab) {
+    if (tab === 'properties') return currentPropertiesData.length > 0;
+    if (tab === 'matrix') return !!currentMatrixData;
+    if (tab === 'seasons') return currentSeasonsData.length > 0;
+    if (tab === 'promotions') return currentPromotionsData.length > 0;
+    return false;
+}
+
+function showTabLoading(tab) {
+    document.getElementById(`tab-pricing-${tab}`)?.classList.add('tab-loading');
+}
+
+function hideTabLoading(tab) {
+    document.getElementById(`tab-pricing-${tab}`)?.classList.remove('tab-loading');
+}
+
 async function loadTabContent(tab) {
+    const needsLoading = !tabDataCached(tab);
+    if (needsLoading) showTabLoading(tab);
     try {
         if (tab === 'properties') {
             await loadPricingProperties();
@@ -77,6 +102,8 @@ async function loadTabContent(tab) {
         if (window.lucide) lucide.createIcons({}, document.getElementById('pricing-modal'));
     } catch (e) {
         console.error(`Failed loading tab ${tab}:`, e);
+    } finally {
+        if (needsLoading) hideTabLoading(tab);
     }
 }
 

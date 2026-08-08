@@ -1040,10 +1040,70 @@ input:checked + .slider:before { transform: translateX(18px); }
     min-height: 0;
     flex-direction: column;
     overflow-y: auto;
+    position: relative;
 }
 
 .pricing-tab-panel.active {
     display: flex;
+}
+
+/* Tab loading overlay */
+.pricing-tab-panel.tab-loading {
+    pointer-events: none;
+}
+
+.pricing-tab-panel.tab-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 12, 20, 0.55);
+    border-radius: 8px;
+    z-index: 5;
+}
+
+.pricing-tab-panel.tab-loading::before {
+    content: '';
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border: 3px solid rgba(20, 184, 166, 0.25);
+    border-top-color: var(--accent-teal);
+    border-radius: 50%;
+    animation: hbb-tab-spin 0.7s linear infinite;
+    z-index: 6;
+}
+
+@keyframes hbb-tab-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Conversation list / thread loading spinner */
+.list-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    padding: 1.5rem 0;
+}
+
+.list-loading::before {
+    content: '';
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(20, 184, 166, 0.25);
+    border-top-color: var(--accent-teal);
+    border-radius: 50%;
+    animation: hbb-tab-spin 0.7s linear infinite;
+}
+
+.list-loading-error {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.85rem;
 }
 
 .pricing-grid-wrapper {

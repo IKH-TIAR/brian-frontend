@@ -289,6 +289,8 @@ let conversationPage = { search: '', before: null, hasMore: false };
 async function loadConversations(search = '', append = false) {
     if (!append) {
         conversationPage = { search: search || '', before: null, hasMore: false };
+        const list = document.getElementById('conversation-list');
+        list.innerHTML = '<div class="list-loading"></div>';
     }
     try {
         const data = await window.api.getConversations(conversationPage.search, conversationPage.before);
@@ -302,11 +304,20 @@ async function loadConversations(search = '', append = false) {
         updateLoadMoreButton();
     } catch (e) {
         console.error("Failed to load conversations:", e);
+        if (!append) {
+            document.getElementById('conversation-list').innerHTML = '<p class="list-loading-error">Failed to load conversations.</p>';
+        }
     }
 }
 
 async function loadMoreConversations() {
-    await loadConversations('', true);
+    const btn = document.getElementById('load-more-convs-btn');
+    if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
+    try {
+        await loadConversations('', true);
+    } finally {
+        updateLoadMoreButton();
+    }
 }
 
 function updateLoadMoreButton() {
@@ -320,6 +331,8 @@ function updateLoadMoreButton() {
             btn.addEventListener('click', loadMoreConversations);
             document.getElementById('conversation-list').appendChild(btn);
         }
+        btn.textContent = 'Load more conversations';
+        btn.disabled = false;
         btn.style.display = 'block';
     } else if (btn) {
         btn.style.display = 'none';
@@ -419,6 +432,9 @@ async function loadThread(phone) {
     appContainer.classList.remove('view-sidebar', 'view-info');
     appContainer.classList.add('view-main');
 
+    // Show loading spinner while the thread fetches
+    document.getElementById('message-list').innerHTML = '<div class="list-loading"></div>';
+
     try {
         const data = await window.api.getConversationThread(phone);
         currentConvId = data.conversation.id;
@@ -432,6 +448,7 @@ async function loadThread(phone) {
         }
     } catch (e) {
         console.error("Failed to load thread:", e);
+        document.getElementById('message-list').innerHTML = '<p class="list-loading-error">Failed to load messages.</p>';
     }
 }
 
@@ -640,15 +657,21 @@ function setupEventListeners() {
 
     // Lazy-load the pricing module (34.5 KB) on first use
     let pricingJsLoaded = false;
+    let pricingJsLoading = false;
     document.getElementById('open-pricing-btn').addEventListener('click', () => {
-        if (pricingJsLoaded) return; // pricing.js binds its own handler after load
+        if (pricingJsLoaded || pricingJsLoading) return; // pricing.js binds its own handler after load
+        pricingJsLoading = true;
         const s = document.createElement('script');
-        s.src = 'js/pricing.js?v=7';
+        s.src = 'js/pricing.js?v=8';
         s.onload = () => {
+            pricingJsLoading = false;
             pricingJsLoaded = true;
             if (typeof openPricingModal === 'function') openPricingModal();
         };
-        s.onerror = () => alert('Failed to load the pricing module. Check your connection.');
+        s.onerror = () => {
+            pricingJsLoading = false;
+            alert('Failed to load the pricing module. Check your connection.');
+        };
         document.body.appendChild(s);
     });
 
