@@ -140,6 +140,7 @@ function renderPricingProperties() {
                 <td>$${plan.cleaning_fee.toFixed(2)}</td>
                 <td>$${plan.extra_person_fee_per_night.toFixed(2)}</td>
                 <td>$${plan.refundable_deposit.toFixed(2)}</td>
+                <td>${plan.minimum_nights || 1} nt${(plan.minimum_nights || 1) > 1 ? 's' : ''}</td>
                 <td><span class="status-badge ${plan.pets_allowed ? '' : 'inactive'}">${plan.pets_allowed ? 'Yes' : 'No'}</span></td>
                 <td><span class="status-badge ${plan.active ? '' : 'inactive'}">${plan.active ? 'Active' : 'Disabled'}</span></td>
                 <td>
@@ -162,6 +163,7 @@ function renderPricingProperties() {
                 <div class="pricing-card-row"><span>Cleaning Fee:</span> <span>$${plan.cleaning_fee.toFixed(2)}</span></div>
                 <div class="pricing-card-row"><span>Extra Person/Nt:</span> <span>$${plan.extra_person_fee_per_night.toFixed(2)}</span></div>
                 <div class="pricing-card-row"><span>Deposit:</span> <span>$${plan.refundable_deposit.toFixed(2)}</span></div>
+                <div class="pricing-card-row"><span>Min Nights:</span> <span>${plan.minimum_nights || 1} night(s)</span></div>
                 <div class="pricing-card-row"><span>Pets / Active:</span> <span>${plan.pets_allowed ? 'Pets Allowed' : 'No Pets'} • ${plan.active ? 'Active' : 'Disabled'}</span></div>
             `;
             cardsContainer.appendChild(card);
@@ -191,6 +193,9 @@ function openRatePlanEditModal(planId) {
     document.getElementById('rpe-cleaning-fee').value = targetPlan.cleaning_fee;
     document.getElementById('rpe-extra-person-fee').value = targetPlan.extra_person_fee_per_night;
     document.getElementById('rpe-deposit').value = targetPlan.refundable_deposit;
+    if (document.getElementById('rpe-min-nights')) {
+        document.getElementById('rpe-min-nights').value = targetPlan.minimum_nights || 1;
+    }
     document.getElementById('rpe-pets-allowed').checked = targetPlan.pets_allowed;
     document.getElementById('rpe-active').checked = targetPlan.active;
 
@@ -214,6 +219,7 @@ function setupRatePlanEditForm() {
                 cleaning_fee: parseFloat(document.getElementById('rpe-cleaning-fee').value),
                 extra_person_fee_per_night: parseFloat(document.getElementById('rpe-extra-person-fee').value),
                 refundable_deposit: parseFloat(document.getElementById('rpe-deposit').value),
+                minimum_nights: document.getElementById('rpe-min-nights') ? parseInt(document.getElementById('rpe-min-nights').value, 10) : 1,
                 pets_allowed: document.getElementById('rpe-pets-allowed').checked,
                 active: document.getElementById('rpe-active').checked,
             };
@@ -828,12 +834,78 @@ async function deletePromotion(promoId) {
 // 5. GENERAL SETTINGS TAB
 // ==================================================
 
+let currentPricingSettingsData = [];
+
 async function loadPricingSettings() {
     const s = await window.api.getPricingSettings();
-    document.getElementById('ps-currency').value = s.currency || 'USD';
-    document.getElementById('ps-pet-fee').value = s.default_pet_fee;
-    document.getElementById('ps-extra-person-fee').value = s.default_extra_person_fee;
-    document.getElementById('ps-deposit').value = s.multi_property_refundable_deposit;
+    if (document.getElementById('ps-currency')) document.getElementById('ps-currency').value = s.currency || 'USD';
+    if (document.getElementById('ps-pet-fee')) document.getElementById('ps-pet-fee').value = s.default_pet_fee;
+    if (document.getElementById('ps-extra-person-fee')) document.getElementById('ps-extra-person-fee').value = s.default_extra_person_fee;
+    if (document.getElementById('ps-deposit')) document.getElementById('ps-deposit').value = s.multi_property_refundable_deposit;
+
+    currentPricingSettingsData = s.settings || [];
+    renderDynamicPricingSettings();
+}
+
+function renderDynamicPricingSettings() {
+    const container = document.getElementById('pricing-settings-keys-list');
+    if (!container) return;
+
+    if (currentPricingSettingsData.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No key-value settings found.</p>';
+        return;
+    }
+
+    let html = '<div class="settings-keys-grid" style="margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1rem;">';
+    html += '<h4 style="margin-bottom:0.75rem; color:var(--accent-teal);">Database Settings Keys</h4>';
+
+    currentPricingSettingsData.forEach(item => {
+        let isJson = false;
+        try {
+            JSON.parse(item.value);
+            isJson = true;
+        } catch (e) { }
+
+        html += `
+            <div class="setting-key-card" style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:0.75rem 1rem; border-radius:8px; margin-bottom:0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                    <strong style="color:var(--accent-teal);">${escapeHtml(item.key)}</strong>
+                    ${isJson ? '<span class="status-badge" style="background:rgba(13,148,136,0.2); color:#5eead4; font-size:0.7rem;">JSON String</span>' : ''}
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.5rem;">${escapeHtml(item.description || 'No description')}</div>
+                <div style="display:flex; gap:0.5rem;">
+                    <textarea id="ps-key-input-${escapeHtml(item.key)}" rows="${isJson ? 3 : 1}" style="flex:1; background:var(--bg-panel); border:1px solid var(--border); color:var(--text-primary); padding:0.4rem; border-radius:4px; font-family:monospace; font-size:0.85rem;">${escapeHtml(item.value)}</textarea>
+                    <button class="btn-sm btn-secondary" onclick="saveSingleSettingKey('${escapeHtml(item.key)}', ${isJson})">Save</button>
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+async function saveSingleSettingKey(key, expectJson) {
+    const inputEl = document.getElementById(`ps-key-input-${key}`);
+    if (!inputEl) return;
+    const val = inputEl.value.trim();
+
+    if (expectJson) {
+        try {
+            JSON.parse(val);
+        } catch (e) {
+            alert(`Invalid JSON payload for key '${key}'! Please check formatting.`);
+            return;
+        }
+    }
+
+    try {
+        await window.api.updateSinglePricingSetting(key, { value: val });
+        alert(`Setting '${key}' updated successfully!`);
+        await loadPricingSettings();
+    } catch (err) {
+        alert(`Failed to save setting '${key}': ` + err.message);
+    }
 }
 
 function setupSettingsForm() {
@@ -842,15 +914,17 @@ function setupSettingsForm() {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
-                currency: document.getElementById('ps-currency').value.trim(),
-                default_pet_fee: parseFloat(document.getElementById('ps-pet-fee').value),
-                default_extra_person_fee: parseFloat(document.getElementById('ps-extra-person-fee').value),
-                multi_property_refundable_deposit: parseFloat(document.getElementById('ps-deposit').value),
+                currency: document.getElementById('ps-currency')?.value.trim() || 'USD',
+                default_pet_fee: parseFloat(document.getElementById('ps-pet-fee')?.value || 30),
+                default_extra_person_fee: parseFloat(document.getElementById('ps-extra-person-fee')?.value || 10),
+                multi_property_refundable_deposit: parseFloat(document.getElementById('ps-deposit')?.value || 100),
             };
 
             const btn = document.getElementById('save-pricing-settings-btn');
-            btn.disabled = true;
-            btn.textContent = 'Saving...';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+            }
 
             try {
                 await window.api.updatePricingSettings(data);
@@ -858,8 +932,10 @@ function setupSettingsForm() {
             } catch (err) {
                 alert("Failed to save settings: " + err.message);
             } finally {
-                btn.disabled = false;
-                btn.textContent = 'Save Settings';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Save Settings';
+                }
             }
         });
     }

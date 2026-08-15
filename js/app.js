@@ -886,6 +886,7 @@ function setupEventListeners() {
         submitBtn.textContent = "Executing...";
 
         const cmdName = cmdModal.dataset.cmd;
+        const phone = cmdModal.dataset.phone || currentPhone;
         const params = {};
 
         const inputs = document.querySelectorAll('.cmd-param-input input');
@@ -893,13 +894,28 @@ function setupEventListeners() {
             params[input.name] = input.value;
         });
 
+        // Balance due command validation requirement:
+        // Must match exact format $X.XX (e.g. $150.00)
+        if (cmdName === 'balance_due') {
+            const amountVal = params['amount'] || '';
+            if (!/^\$\d+\.\d{2}$/.test(amountVal)) {
+                alert("Invalid amount format! Amount must match exact format $X.XX (e.g. $150.00)");
+                submitBtn.disabled = false;
+                submitBtn.textContent = origText;
+                return;
+            }
+        }
+
         try {
-            await window.api.executeCommand(cmdName, currentPhone, params);
+            await window.api.executeCommand(cmdName, phone, params);
             cmdModal.classList.remove('active');
-            loadThread(currentPhone);
+            if (phone === currentPhone) {
+                loadThread(currentPhone);
+            }
+            alert(`Command '${cmdName}' executed successfully!`);
         } catch (err) {
             console.error("Command failed", err);
-            alert("Command failed to execute");
+            alert("Command failed to execute: " + (err.message || err));
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = origText;
@@ -907,7 +923,7 @@ function setupEventListeners() {
     });
 
     // Notification Bell Listener
-    document.getElementById('enable-notifications-btn')?.addEventListener('click', requestNotificationPermission);
+    document.getElementById('open-notifications-btn')?.addEventListener('click', requestNotificationPermission);
 
     // Settings Modal
     document.getElementById('open-settings-btn').addEventListener('click', openSettingsModal);
@@ -942,33 +958,55 @@ function setupEventListeners() {
     });
 }
 
-function openCommandModal(cmd) {
-    if (!currentPhone) {
+function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
+    const activePhone = targetPhone || currentPhone;
+    if (!activePhone) {
         alert("Please select a conversation first.");
         return;
     }
 
+    // If cmd is passed as a string command name (e.g. 'balance_due'), resolve it from adminCommands
+    let cmdObj = cmd;
+    if (typeof cmd === 'string') {
+        let found = null;
+        for (const cat in adminCommands) {
+            const match = adminCommands[cat].find(c => c.command === cmd);
+            if (match) { found = match; break; }
+        }
+        if (found) {
+            cmdObj = found;
+        } else {
+            // Build fallback command object if missing from registry
+            cmdObj = {
+                command: cmd,
+                label: cmd.replace(/_/g, ' ').toUpperCase(),
+                required_params: cmd === 'balance_due' ? [{ name: 'amount', label: 'Amount ($X.XX)', required: true }] : []
+            };
+        }
+    }
+
     const modal = document.getElementById('command-modal');
-    document.getElementById('cmd-title').textContent = `Execute ${cmd.label}`;
-    modal.dataset.cmd = cmd.command;
+    document.getElementById('cmd-title').textContent = `Execute ${cmdObj.label}`;
+    modal.dataset.cmd = cmdObj.command;
+    modal.dataset.phone = activePhone;
 
     const paramsContainer = document.getElementById('cmd-params');
     paramsContainer.innerHTML = '';
 
-    if (cmd.required_params && cmd.required_params.length > 0) {
-        cmd.required_params.forEach(param => {
+    if (cmdObj.required_params && cmdObj.required_params.length > 0) {
+        cmdObj.required_params.forEach(param => {
             const div = document.createElement('div');
             div.className = 'cmd-param-input';
             const paramKey = typeof param === 'object' ? (param.key || param.name) : param;
             const paramLabel = typeof param === 'object' ? (param.label || paramKey) : param;
             
-            // Default to required if not explicitly set to false
             const isRequired = typeof param === 'object' && param.required === false ? false : true;
             const requiredAttr = isRequired ? 'required' : '';
+            const initialVal = initialParams[paramKey] !== undefined ? initialParams[paramKey] : '';
             
             div.innerHTML = `
-                <label>${paramLabel}</label>
-                <input type="text" name="${paramKey}" placeholder="${paramLabel}" ${requiredAttr}>
+                <label>${escapeHtml(paramLabel)}</label>
+                <input type="text" name="${escapeHtml(paramKey)}" placeholder="${escapeHtml(paramLabel)}" value="${escapeHtml(initialVal)}" ${requiredAttr}>
             `;
             paramsContainer.appendChild(div);
         });
@@ -978,6 +1016,8 @@ function openCommandModal(cmd) {
 
     modal.classList.add('active');
 }
+
+window.openCommandModal = openCommandModal;
 
 function handleNewMessageEvent(data) {
     const appContainer = document.getElementById('app-container');

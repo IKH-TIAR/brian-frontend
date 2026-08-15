@@ -271,6 +271,72 @@ class ApiClient {
             body: JSON.stringify(data)
         });
     }
+
+    async updateSinglePricingSetting(key, data) {
+        return this.request(`/admin/pricing/settings/${encodeURIComponent(key)}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    // Bookings API
+    async getBookings(params = {}) {
+        const query = new URLSearchParams();
+        if (params.status) query.append('status', params.status);
+        if (params.check_in_from) query.append('check_in_from', params.check_in_from);
+        if (params.check_in_to) query.append('check_in_to', params.check_in_to);
+        if (params.search) query.append('search', params.search);
+        const qStr = query.toString() ? `?${query.toString()}` : '';
+        return this.request(`/admin/bookings${qStr}`);
+    }
+
+    async getBooking(id) {
+        return this.request(`/admin/bookings/${encodeURIComponent(id)}`);
+    }
+
+    async createBooking(data) {
+        return this.request('/admin/bookings', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateBooking(id, data) {
+        return this.request(`/admin/bookings/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateBookingStatus(id, status) {
+        return this.request(`/admin/bookings/${encodeURIComponent(id)}/status`, {
+            method: 'POST',
+            body: JSON.stringify({ status })
+        });
+    }
+
+    // Template Config API
+    async getTemplateConfigs() {
+        return this.request('/admin/template-config');
+    }
+
+    async updateTemplateConfig(id, data) {
+        return this.request(`/admin/template-config/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    // Template Sends Log API
+    async getTemplateSends(params = {}) {
+        const query = new URLSearchParams();
+        if (params.template_key) query.append('template_key', params.template_key);
+        if (params.status) query.append('status', params.status);
+        if (params.page) query.append('page', params.page);
+        if (params.limit) query.append('limit', params.limit);
+        const qStr = query.toString() ? `?${query.toString()}` : '';
+        return this.request(`/admin/template-sends${qStr}`);
+    }
 }
 
 window.api = new ApiClient();
