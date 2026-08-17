@@ -648,6 +648,33 @@ function renderCommands() {
 }
 
 function setupEventListeners() {
+    // Sidebar Header Dropdown Menu Toggle
+    const sidebarMenuBtn = document.getElementById('sidebar-menu-btn');
+    const sidebarDropdownMenu = document.getElementById('sidebar-dropdown-menu');
+
+    if (sidebarMenuBtn && sidebarDropdownMenu) {
+        sidebarMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = sidebarDropdownMenu.classList.contains('hidden');
+            sidebarDropdownMenu.classList.toggle('hidden');
+            sidebarMenuBtn.classList.toggle('active', isHidden);
+        });
+
+        sidebarDropdownMenu.addEventListener('click', (e) => {
+            if (e.target.closest('.dropdown-item')) {
+                sidebarDropdownMenu.classList.add('hidden');
+                sidebarMenuBtn.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!sidebarDropdownMenu.contains(e.target) && !sidebarMenuBtn.contains(e.target)) {
+                sidebarDropdownMenu.classList.add('hidden');
+                sidebarMenuBtn.classList.remove('active');
+            }
+        });
+    }
+
     // Delegated conversation-list click — one listener for all rows
     // (per-row listeners were rebuilt and leaked on every list refresh)
     document.getElementById('conversation-list').addEventListener('click', (e) => {

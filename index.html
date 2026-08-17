@@ -28,37 +28,43 @@
 
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div class="sidebar-title-row">
                     <h2 style="margin: 0;">Conversations</h2>
-                    <div style="display: flex; gap: 4px;">
-                        <button class="icon-btn" id="open-notifications-btn" title="Enable Notifications"
-                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                            <i data-lucide="bell"></i>
+                    <div class="header-menu-container">
+                        <button class="icon-btn header-menu-toggle" id="sidebar-menu-btn" title="Actions Menu" aria-label="Actions Menu">
+                            <i data-lucide="more-vertical"></i>
                         </button>
-                        <button class="icon-btn" id="open-bookings-btn" title="Bookings Management" onclick="window.openBookingsModal && window.openBookingsModal()"
-                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                            <i data-lucide="calendar"></i>
-                        </button>
-                        <button class="icon-btn" id="open-pricing-btn" title="Pricing Management"
-                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                            <i data-lucide="dollar-sign"></i>
-                        </button>
-                        <button class="icon-btn" id="open-template-config-btn" title="Property Template Config" onclick="window.openTemplateConfigModal && window.openTemplateConfigModal()"
-                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                            <i data-lucide="map-pin"></i>
-                        </button>
-                        <button class="icon-btn" id="open-template-sends-btn" title="WhatsApp Template Log" onclick="window.openTemplateSendsModal && window.openTemplateSendsModal()"
-                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                            <i data-lucide="send"></i>
-                        </button>
-                        <button class="icon-btn" id="open-bungalows-btn" title="Bungalow Codes"
-                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                            <i data-lucide="key"></i>
-                        </button>
-                        <button class="icon-btn" id="open-settings-btn" title="Command Settings"
-                            style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                            <i data-lucide="settings"></i>
-                        </button>
+                        <div class="header-dropdown-menu hidden" id="sidebar-dropdown-menu">
+                            <button class="dropdown-item" id="open-bookings-btn" onclick="window.openBookingsModal && window.openBookingsModal()">
+                                <i data-lucide="calendar"></i>
+                                <span>Bookings Management</span>
+                            </button>
+                            <button class="dropdown-item" id="open-pricing-btn">
+                                <i data-lucide="dollar-sign"></i>
+                                <span>Pricing Management</span>
+                            </button>
+                            <button class="dropdown-item" id="open-notifications-btn">
+                                <i data-lucide="bell"></i>
+                                <span>Enable Notifications</span>
+                            </button>
+                            <button class="dropdown-item" id="open-template-config-btn" onclick="window.openTemplateConfigModal && window.openTemplateConfigModal()">
+                                <i data-lucide="map-pin"></i>
+                                <span>Property Templates</span>
+                            </button>
+                            <button class="dropdown-item" id="open-template-sends-btn" onclick="window.openTemplateSendsModal && window.openTemplateSendsModal()">
+                                <i data-lucide="send"></i>
+                                <span>WhatsApp Template Log</span>
+                            </button>
+                            <button class="dropdown-item" id="open-bungalows-btn">
+                                <i data-lucide="key"></i>
+                                <span>Bungalow Codes</span>
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" id="open-settings-btn">
+                                <i data-lucide="settings"></i>
+                                <span>Command Settings</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="search-container">
