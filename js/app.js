@@ -50,7 +50,7 @@ function getAudioCtx() {
         }
     }
     if (audioCtx.state === 'suspended') {
-        try { audioCtx.resume(); } catch (e) {}
+        try { audioCtx.resume(); } catch (e) { }
     }
     return audioCtx;
 }
@@ -81,7 +81,7 @@ function playEscalationChime() {
     try {
         const ctx = getAudioCtx();
         if (!ctx) return;
-        
+
         // Tone 1
         const osc1 = ctx.createOscillator();
         const gain1 = ctx.createGain();
@@ -242,7 +242,7 @@ function setupWebSocket() {
         ws.onmessage = null;
         ws.onclose = null;
         ws.onerror = null;
-        try { ws.close(); } catch (e) {}
+        try { ws.close(); } catch (e) { }
     }
 
     ws = new WebSocket(WS_BASE);
@@ -269,7 +269,7 @@ function setupWebSocket() {
     };
 
     ws.onerror = () => {
-        try { ws.close(); } catch (e) {}
+        try { ws.close(); } catch (e) { }
     };
 }
 
@@ -277,9 +277,9 @@ function setupWebSocket() {
 // connection is detected and re-established instead of silently stalling.
 setInterval(() => {
     if (ws && ws.readyState === WebSocket.OPEN) {
-        try { ws.send(JSON.stringify({ type: 'ping' })); } catch (e) {}
+        try { ws.send(JSON.stringify({ type: 'ping' })); } catch (e) { }
         if (Date.now() - wsLastMessageAt > 90000) {
-            try { ws.close(); } catch (e) {}
+            try { ws.close(); } catch (e) { }
         }
     }
 }, 30000);
@@ -366,15 +366,15 @@ function formatCRDateTime(dateStr) {
     const d = new Date(str);
     if (isNaN(d.getTime())) return '';
     const timeStr = CR_TIME_FMT.format(d);
-    
+
     // Get today and yesterday in Costa Rica timezone
     const now = new Date();
     const todayCR = CR_FULL_DATE_FMT.format(now);
     const dateCR = CR_FULL_DATE_FMT.format(d);
-    
+
     const yesterday = new Date(now.getTime() - 86400000);
     const yesterdayCR = CR_FULL_DATE_FMT.format(yesterday);
-    
+
     if (dateCR === todayCR) {
         return `Today ${timeStr}`;
     } else if (dateCR === yesterdayCR) {
@@ -539,10 +539,10 @@ function renderThread(data) {
     document.getElementById('thread-phone').textContent = contact.phone;
 
     document.getElementById('badge-returning').classList.toggle('hidden', !conversation.is_returning);
-    
+
     document.getElementById('quick-catchup-btn').style.display = 'flex';
     document.getElementById('clear-history-btn').style.display = 'flex';
-    
+
     // Mode toggle
     const modeToggle = document.getElementById('mode-toggle');
     const isHuman = contact.mode === 'HUMAN';
@@ -723,14 +723,14 @@ function setupEventListeners() {
     document.getElementById('clear-history-btn').addEventListener('click', async (e) => {
         const btn = e.currentTarget;
         if (btn.disabled) return;
-        
+
         if (!currentPhone) return;
         if (!confirm("Are you sure you want to completely clear the chat history for this guest? This cannot be undone.")) return;
-        
+
         const origHTML = btn.innerHTML;
         btn.innerHTML = `<i data-lucide="loader" class="spin" style="width: 16px; height: 16px;"></i> Clearing...`;
         btn.disabled = true;
-        
+
         try {
             await window.api.resetHistory(currentPhone);
             // Wait briefly for N8N to process it and delete the rows
@@ -790,12 +790,12 @@ function setupEventListeners() {
             submitBtn.disabled = false;
             return;
         }
-        
+
         input.value = '';
         try {
             await window.api.sendAdminReply(currentPhone, text);
             loadThread(currentPhone);
-        } catch(e) { console.error(e); } finally {
+        } catch (e) { console.error(e); } finally {
             submitBtn.disabled = false;
         }
     });
@@ -880,7 +880,7 @@ function setupEventListeners() {
         e.preventDefault();
         const submitBtn = e.target.querySelector('button[type="submit"]');
         if (submitBtn.disabled) return; // Prevent multiple submissions if triggered via Enter key
-        
+
         const origText = submitBtn.textContent;
         submitBtn.disabled = true;
         submitBtn.textContent = "Executing...";
@@ -906,7 +906,23 @@ function setupEventListeners() {
             }
         }
 
+        // Deposit Received: validate amount before sending.
+        if (cmdName === 'deposit_received') {
+            const depVal = parseFloat(String(params['deposit_amount'] || '').replace(/[^0-9.]/g, ''));
+            if (!depVal || depVal <= 0) {
+                alert('Please enter a valid deposit amount received (e.g. 150 or 150.00).');
+                submitBtn.disabled = false;
+                submitBtn.textContent = origText;
+                return;
+            }
+            params['deposit_amount'] = depVal;
+        }
+
+
         try {
+            if (cmdName === 'deposit_received') {
+                await window.api.confirmDeposit(phone, params['deposit_amount']);
+            }
             await window.api.executeCommand(cmdName, phone, params);
             cmdModal.classList.remove('active');
             if (phone === currentPhone) {
@@ -931,7 +947,7 @@ function setupEventListeners() {
         document.getElementById('settings-modal').classList.remove('active');
         document.getElementById('settings-modal').classList.remove('view-editor');
     });
-    
+
     document.getElementById('mobile-back-settings-btn').addEventListener('click', () => {
         document.getElementById('settings-modal').classList.remove('view-editor');
         document.getElementById('settings-editor').style.display = 'none';
@@ -985,6 +1001,16 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
         }
     }
 
+    // Deposit Received: collect the actual deposit amount so the backend can
+    // compute balance_due = total_amount - deposit_amount when confirming.
+    if (cmdObj.command === 'deposit_received') {
+        const dParams = cmdObj.required_params || [];
+        const hasDeposit = dParams.some(p => (typeof p === 'object' ? (p.key || p.name) : p) === 'deposit_amount');
+        if (!hasDeposit) {
+            cmdObj = { ...cmdObj, required_params: [...dParams, { name: 'deposit_amount', label: 'Deposit Received ($)', required: true }] };
+        }
+    }
+
     const modal = document.getElementById('command-modal');
     document.getElementById('cmd-title').textContent = `Execute ${cmdObj.label}`;
     modal.dataset.cmd = cmdObj.command;
@@ -999,11 +1025,11 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
             div.className = 'cmd-param-input';
             const paramKey = typeof param === 'object' ? (param.key || param.name) : param;
             const paramLabel = typeof param === 'object' ? (param.label || paramKey) : param;
-            
+
             const isRequired = typeof param === 'object' && param.required === false ? false : true;
             const requiredAttr = isRequired ? 'required' : '';
             const initialVal = initialParams[paramKey] !== undefined ? initialParams[paramKey] : '';
-            
+
             div.innerHTML = `
                 <label>${escapeHtml(paramLabel)}</label>
                 <input type="text" name="${escapeHtml(paramKey)}" placeholder="${escapeHtml(paramLabel)}" value="${escapeHtml(initialVal)}" ${requiredAttr}>

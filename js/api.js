@@ -315,6 +315,18 @@ class ApiClient {
         });
     }
 
+    async confirmDeposit(phone, depositAmount, paymentDueDate = null) {
+        return this.request('/admin/bookings/confirm-deposit', {
+            method: 'POST',
+            body: JSON.stringify({
+                phone: phone,
+                deposit_amount: depositAmount,
+                payment_due_date: paymentDueDate
+            })
+        });
+
+    }
+
     // Template Config API
     async getTemplateConfigs() {
         return this.request('/admin/template-config');
