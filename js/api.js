@@ -1,12 +1,12 @@
 function getApiBaseUrl() {
-    if (window.location.protocol === 'https:' || window.location.protocol === 'http:') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return `${window.location.origin}/api`;
     }
     return 'https://raphael-precipiced-lashunda.ngrok-free.dev/api';
 }
 
 function getWsBaseUrl() {
-    if (window.location.protocol === 'https:' || window.location.protocol === 'http:') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         const scheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         return `${scheme}//${window.location.host}/ws`;
     }
