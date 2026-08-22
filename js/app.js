@@ -935,7 +935,8 @@ function setupEventListeners() {
 
         // Deposit Received: validate amount before sending.
         if (cmdName === 'deposit_received') {
-            const depVal = parseFloat(String(params['deposit_amount'] || '').replace(/[^0-9.]/g, ''));
+            const rawVal = params['deposit_amount'] || params['amount'] || params['deposit'] || '';
+            const depVal = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
             if (!depVal || depVal <= 0) {
                 alert('Please enter a valid deposit amount received (e.g. 150 or 150.00).');
                 submitBtn.disabled = false;
@@ -943,6 +944,7 @@ function setupEventListeners() {
                 return;
             }
             params['deposit_amount'] = depVal;
+            params['amount'] = depVal;
         }
 
 
@@ -1028,14 +1030,9 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
         }
     }
 
-    // Deposit Received: collect the actual deposit amount so the backend can
-    // compute balance_due = total_amount - deposit_amount when confirming.
+    // Deposit Received: ensure only a single clean input field for deposit amount is shown.
     if (cmdObj.command === 'deposit_received') {
-        const dParams = cmdObj.required_params || [];
-        const hasDeposit = dParams.some(p => (typeof p === 'object' ? (p.key || p.name) : p) === 'deposit_amount');
-        if (!hasDeposit) {
-            cmdObj = { ...cmdObj, required_params: [...dParams, { name: 'deposit_amount', label: 'Deposit Received ($)', required: true }] };
-        }
+        cmdObj = { ...cmdObj, required_params: [{ name: 'deposit_amount', label: 'Deposit Received ($)', required: true }] };
     }
 
     const modal = document.getElementById('command-modal');
@@ -1073,9 +1070,7 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
 window.openCommandModal = openCommandModal;
 
 function handleNewMessageEvent(data) {
-    const appContainer = document.getElementById('app-container');
-    const isMainViewActive = appContainer ? appContainer.classList.contains('view-main') : true;
-    const isCurrentThread = (data.phone === currentPhone) && isMainViewActive;
+    const isCurrentThread = (data.phone === currentPhone);
 
     // Update the open thread in place — no full re-fetch, no history wipe
     if (isCurrentThread) {

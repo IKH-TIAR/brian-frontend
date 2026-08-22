@@ -1,5 +1,20 @@
-const API_BASE = 'https://raphael-precipiced-lashunda.ngrok-free.dev/api';
-const WS_BASE = 'wss://raphael-precipiced-lashunda.ngrok-free.dev/ws';
+function getApiBaseUrl() {
+    if (window.location.protocol === 'https:' || window.location.protocol === 'http:') {
+        return `${window.location.origin}/api`;
+    }
+    return 'https://raphael-precipiced-lashunda.ngrok-free.dev/api';
+}
+
+function getWsBaseUrl() {
+    if (window.location.protocol === 'https:' || window.location.protocol === 'http:') {
+        const scheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        return `${scheme}//${window.location.host}/ws`;
+    }
+    return 'wss://raphael-precipiced-lashunda.ngrok-free.dev/ws';
+}
+
+const API_BASE = getApiBaseUrl();
+const WS_BASE = getWsBaseUrl();
 
 
 class ApiClient {
