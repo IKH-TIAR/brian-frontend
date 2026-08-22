@@ -230,6 +230,9 @@ async function initApp() {
     // UI listeners work immediately — not gated behind network calls
     setupEventListeners();
 
+    // Connect WebSocket for real-time message updates
+    setupWebSocket();
+
     // Independent fetches run in parallel
     await Promise.all([loadConversations(), loadCommands()]);
 }
@@ -283,6 +286,36 @@ setInterval(() => {
         }
     }
 }, 30000);
+
+// Fallback Poll: If WebSocket is disconnected or blocked by ngrok, auto-update messages every 4s
+let lastPolledMsgId = null;
+setInterval(async () => {
+    if ((!ws || ws.readyState !== WebSocket.OPEN) && window.api && window.api.password) {
+        try {
+            if (currentPhone) {
+                const threadData = await window.api.getMessages(currentPhone);
+                if (threadData && threadData.messages && threadData.messages.length > 0) {
+                    const latest = threadData.messages[threadData.messages.length - 1];
+                    if (latest.id !== lastPolledMsgId) {
+                        lastPolledMsgId = latest.id;
+                        handleNewMessageEvent({
+                            id: latest.id,
+                            conversation_id: latest.conversation_id,
+                            phone: currentPhone,
+                            role: latest.role,
+                            content: latest.content,
+                            created_at: latest.created_at,
+                            escalated: latest.escalated,
+                            escalation_reason: latest.escalation_reason
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            // silent catch
+        }
+    }
+}, 4000);
 
 let conversationPage = { search: '', before: null, hasMore: false };
 
@@ -681,6 +714,19 @@ function setupEventListeners() {
         const item = e.target.closest('.conv-item');
         if (item) loadThread(item.dataset.phone);
     });
+
+    // Thread refresh button
+    const refreshBtn = document.getElementById('thread-refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            if (currentPhone) {
+                refreshBtn.classList.add('spinning');
+                loadThread(currentPhone).finally(() => {
+                    setTimeout(() => refreshBtn.classList.remove('spinning'), 400);
+                });
+            }
+        });
+    }
 
     // Lazy-load the pricing module (34.5 KB) on first use
     let pricingJsLoaded = false;
