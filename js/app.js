@@ -287,13 +287,13 @@ setInterval(() => {
     }
 }, 30000);
 
-// Fallback Poll: If WebSocket is disconnected or blocked by ngrok, auto-update messages every 4s
+// Auto-Update Poller: Keeps active thread and conversations fresh every 3s
 let lastPolledMsgId = null;
 setInterval(async () => {
-    if ((!ws || ws.readyState !== WebSocket.OPEN) && window.api && window.api.password) {
+    if (window.api && window.api.password) {
         try {
             if (currentPhone) {
-                const threadData = await window.api.getMessages(currentPhone);
+                const threadData = await window.api.getConversationThread(currentPhone);
                 if (threadData && threadData.messages && threadData.messages.length > 0) {
                     const latest = threadData.messages[threadData.messages.length - 1];
                     if (latest.id !== lastPolledMsgId) {
@@ -306,7 +306,8 @@ setInterval(async () => {
                             content: latest.content,
                             created_at: latest.created_at,
                             escalated: latest.escalated,
-                            escalation_reason: latest.escalation_reason
+                            escalation_reason: latest.escalation_reason,
+                            contact_mode: threadData.contact ? threadData.contact.mode : 'BOT'
                         });
                     }
                 }
@@ -315,7 +316,7 @@ setInterval(async () => {
             // silent catch
         }
     }
-}, 4000);
+}, 3000);
 
 let conversationPage = { search: '', before: null, hasMore: false };
 
@@ -718,12 +719,18 @@ function setupEventListeners() {
     // Thread refresh button
     const refreshBtn = document.getElementById('thread-refresh-btn');
     if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            if (currentPhone) {
-                refreshBtn.classList.add('spinning');
-                loadThread(currentPhone).finally(() => {
-                    setTimeout(() => refreshBtn.classList.remove('spinning'), 400);
-                });
+        refreshBtn.addEventListener('click', async () => {
+            refreshBtn.classList.add('spinning');
+            try {
+                const tasks = [loadConversations()];
+                if (currentPhone) {
+                    tasks.push(loadThread(currentPhone));
+                }
+                await Promise.all(tasks);
+            } catch (err) {
+                console.error("Refresh failed:", err);
+            } finally {
+                setTimeout(() => refreshBtn.classList.remove('spinning'), 500);
             }
         });
     }
@@ -1115,8 +1122,13 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
 
 window.openCommandModal = openCommandModal;
 
+function normalizePhone(phone) {
+    if (!phone) return '';
+    return String(phone).replace(/\D/g, '');
+}
+
 function handleNewMessageEvent(data) {
-    const isCurrentThread = (data.phone === currentPhone);
+    const isCurrentThread = currentPhone && (normalizePhone(data.phone) === normalizePhone(currentPhone));
 
     // Update the open thread in place — no full re-fetch, no history wipe
     if (isCurrentThread) {
@@ -1159,7 +1171,7 @@ function handleNewMessageEvent(data) {
 function appendMessageToThread(data) {
     const list = document.getElementById('message-list');
     if (!list) return;
-    // Dedupe — the same message may arrive via WS more than once
+    // Dedupe — the same message may arrive via WS or poller more than once
     if (list.querySelector(`.message[data-id="${data.id}"]`)) return;
 
     const wasNearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 200;
@@ -1189,8 +1201,18 @@ function upsertConversationItem(data, isCurrentThread) {
     const list = document.getElementById('conversation-list');
     if (!list) return;
 
-    const selector = `[data-phone="${data.phone.replace(/"/g, '\\"')}"]`;
-    const existing = list.querySelector(`.conv-item${selector}`);
+    let existing = null;
+    const targetNorm = normalizePhone(data.phone);
+    if (targetNorm) {
+        const items = list.querySelectorAll('.conv-item');
+        for (const item of items) {
+            if (normalizePhone(item.dataset.phone) === targetNorm) {
+                existing = item;
+                break;
+            }
+        }
+    }
+
     const prevUnread = existing ? parseInt(existing.dataset.unread || '0', 10) : 0;
 
     // If the open thread is on screen, the backend marks messages read — don't bump the badge
