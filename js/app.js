@@ -1137,16 +1137,17 @@ function setupEventListeners() {
             params[input.name] = input.value;
         });
 
-        // Balance due command validation requirement:
-        // Must match exact format $X.XX (e.g. $150.00)
+        // Balance due command: Auto-format any entered number to $X.XX format required by WhatsApp template
         if (cmdName === 'balance_due') {
-            const amountVal = params['amount'] || '';
-            if (!/^\$\d+\.\d{2}$/.test(amountVal)) {
-                showToast("Invalid amount format! Amount must match exact format $X.XX (e.g. $150.00)", "warning");
+            const rawVal = params['amount'] || '';
+            const num = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
+            if (isNaN(num) || num <= 0) {
+                showToast("Please enter a valid balance due amount (e.g. 150 or $150.00)", "warning");
                 submitBtn.disabled = false;
                 submitBtn.textContent = origText;
                 return;
             }
+            params['amount'] = `$${num.toFixed(2)}`;
         }
 
         // Deposit Received: validate amount before sending.

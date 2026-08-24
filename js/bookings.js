@@ -378,14 +378,15 @@ function launchBookingCommand(commandCode, phone, defaultAmount = '') {
 async function executeCommandDirectly(commandCode, phone, amount = '') {
     let params = {};
     if (commandCode === 'balance_due') {
-        const val = prompt("Enter balance due amount in format $X.XX (e.g. $150.00):", amount || "$150.00");
+        const val = prompt("Enter balance due amount (e.g. 150 or $150.00):", amount || "$150.00");
         if (!val) return;
-        if (!/^\$\d+\.\d{2}$/.test(val)) {
-            if (window.showToast) window.showToast("Invalid amount format! Amount must match exact format $X.XX (e.g. $150.00)", "warning");
-            else alert("Invalid amount format! Amount must match exact format $X.XX (e.g. $150.00)");
+        const num = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+        if (isNaN(num) || num <= 0) {
+            if (window.showToast) window.showToast("Please enter a valid balance due amount (e.g. 150 or $150.00)", "warning");
+            else alert("Please enter a valid balance due amount (e.g. 150 or $150.00)");
             return;
         }
-        params = { amount: val };
+        params = { amount: `$${num.toFixed(2)}` };
     }
     try {
         await window.api.executeCommand({ command: commandCode, phone: phone, params: params });
