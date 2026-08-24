@@ -337,6 +337,12 @@ class ApiClient {
         });
     }
 
+    async deleteBooking(id) {
+        return this.request(`/admin/bookings/${encodeURIComponent(id)}`, {
+            method: 'DELETE'
+        });
+    }
+
     async confirmDeposit(phone, depositAmount, paymentDueDate = null) {
         return this.request('/admin/bookings/confirm-deposit', {
             method: 'POST',

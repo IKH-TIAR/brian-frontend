@@ -1,3 +1,29 @@
+// ── Global Toast Notification ──
+const TOAST_ICONS = { success: '✓', error: '✕', warning: '!', info: 'i' };
+function showToast(message, type = 'success', durationMs = 3500) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <span class="toast-icon">${TOAST_ICONS[type] || 'i'}</span>
+        <span class="toast-message">${message}</span>
+        <button class="toast-close" aria-label="Close">&times;</button>
+    `;
+    toast.querySelector('.toast-close').addEventListener('click', () => dismissToast(toast));
+    container.appendChild(toast);
+    const timer = setTimeout(() => dismissToast(toast), durationMs);
+    toast._timer = timer;
+}
+function dismissToast(el) {
+    if (el._dismissed) return;
+    el._dismissed = true;
+    clearTimeout(el._timer);
+    el.classList.add('toast-exit');
+    el.addEventListener('animationend', () => el.remove());
+}
+window.showToast = showToast;
+
 document.addEventListener('DOMContentLoaded', () => {
     if (window.lucide) lucide.createIcons();
 
@@ -1059,7 +1085,7 @@ function setupEventListeners() {
         if (cmdName === 'balance_due') {
             const amountVal = params['amount'] || '';
             if (!/^\$\d+\.\d{2}$/.test(amountVal)) {
-                alert("Invalid amount format! Amount must match exact format $X.XX (e.g. $150.00)");
+                showToast("Invalid amount format! Amount must match exact format $X.XX (e.g. $150.00)", "warning");
                 submitBtn.disabled = false;
                 submitBtn.textContent = origText;
                 return;
@@ -1071,7 +1097,7 @@ function setupEventListeners() {
             const rawVal = params['deposit_amount'] || params['amount'] || params['deposit'] || '';
             const depVal = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
             if (!depVal || depVal <= 0) {
-                alert('Please enter a valid deposit amount received (e.g. 150 or 150.00).');
+                showToast('Please enter a valid deposit amount received (e.g. 150 or 150.00).', "warning");
                 submitBtn.disabled = false;
                 submitBtn.textContent = origText;
                 return;
@@ -1090,10 +1116,11 @@ function setupEventListeners() {
             if (phone === currentPhone) {
                 loadThread(currentPhone);
             }
-            alert(`Command '${cmdName}' executed successfully!`);
+            const friendlyName = cmdName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            showToast(`Command '${friendlyName}' executed successfully!`, 'success');
         } catch (err) {
             console.error("Command failed", err);
-            alert("Command failed to execute: " + (err.message || err));
+            showToast("Command failed: " + (err.message || err), 'error');
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = origText;

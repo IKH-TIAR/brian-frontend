@@ -62,6 +62,7 @@ window.closeBookingsModal = closeBookingsModal;
 window.closeBookingDetailModal = closeBookingDetailModal;
 window.closeTemplateConfigModal = closeTemplateConfigModal;
 window.closeTemplateSendsModal = closeTemplateSendsModal;
+window.handleDeleteBooking = handleDeleteBooking;
 
 function debounce(func, wait) {
     let timeout;
@@ -259,10 +260,30 @@ async function triggerStatusTransition(bookingId, newStatus) {
     if (!confirm(`Are you sure you want to change status to ${newStatus.toUpperCase()}?`)) return;
     try {
         await window.api.updateBookingStatus(bookingId, newStatus);
+        if (window.showToast) window.showToast(`Status updated to ${newStatus.toUpperCase()}`, "success");
         await openBookingDetailModal(bookingId);
         await loadBookings();
     } catch (err) {
-        alert("Failed to update status: " + err.message);
+        if (window.showToast) window.showToast("Failed to update status: " + err.message, "error");
+        else alert("Failed to update status: " + err.message);
+    }
+}
+
+async function handleDeleteBooking() {
+    const id = document.getElementById('bd-id').value;
+    const bName = document.getElementById('bd-guest-name').value || 'this booking';
+    if (!id) return;
+    if (!confirm(`Are you sure you want to PERMANENTLY DELETE booking for "${bName}"?\n\nThis action cannot be undone.`)) {
+        return;
+    }
+    try {
+        await window.api.deleteBooking(id);
+        if (window.showToast) window.showToast("Booking deleted successfully!", "success");
+        closeBookingDetailModal();
+        await loadBookings();
+    } catch (err) {
+        if (window.showToast) window.showToast("Failed to delete booking: " + err.message, "error");
+        else alert("Failed to delete booking: " + err.message);
     }
 }
 
@@ -290,17 +311,19 @@ async function handleSaveBooking(e) {
 
     try {
         await window.api.updateBooking(id, data);
-        alert("Booking details saved!");
+        if (window.showToast) window.showToast("Booking details saved successfully!", "success");
         closeBookingDetailModal();
         await loadBookings();
     } catch (err) {
-        alert("Failed to save booking: " + err.message);
+        if (window.showToast) window.showToast("Failed to save booking: " + err.message, "error");
+        else alert("Failed to save booking: " + err.message);
     }
 }
 
 function launchBookingCommand(commandCode, phone, defaultAmount = '') {
     if (!phone) {
-        alert("No guest phone number available for this booking.");
+        if (window.showToast) window.showToast("No guest phone number available for this booking.", "warning");
+        else alert("No guest phone number available for this booking.");
         return;
     }
     // Launch standard execution flow via window.openCommandModal
@@ -318,16 +341,18 @@ async function executeCommandDirectly(commandCode, phone, amount = '') {
         const val = prompt("Enter balance due amount in format $X.XX (e.g. $150.00):", amount || "$150.00");
         if (!val) return;
         if (!/^\$\d+\.\d{2}$/.test(val)) {
-            alert("Invalid amount format! Amount must match exact format $X.XX (e.g. $150.00)");
+            if (window.showToast) window.showToast("Invalid amount format! Amount must match exact format $X.XX (e.g. $150.00)", "warning");
+            else alert("Invalid amount format! Amount must match exact format $X.XX (e.g. $150.00)");
             return;
         }
         params = { amount: val };
     }
     try {
         await window.api.executeCommand({ command: commandCode, phone: phone, params: params });
-        alert(`Command '${commandCode}' executed successfully!`);
+        if (window.showToast) window.showToast(`Command '${commandCode}' executed successfully!`, "success");
     } catch (err) {
-        alert("Command execution failed: " + err.message);
+        if (window.showToast) window.showToast("Command execution failed: " + err.message, "error");
+        else alert("Command execution failed: " + err.message);
     }
 }
 
