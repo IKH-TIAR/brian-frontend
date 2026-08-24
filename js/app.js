@@ -287,36 +287,43 @@ setInterval(() => {
     }
 }, 30000);
 
-// Auto-Update Poller: Keeps active thread and conversations fresh every 3s
+// Fallback Poller: Only runs when WebSocket is disconnected (e.g. ngrok blocks WS).
+// Polls every 8s using the lightweight conversation-list endpoint, not full thread data.
 let lastPolledMsgId = null;
+let pollInFlight = false;
 setInterval(async () => {
-    if (window.api && window.api.password) {
-        try {
-            if (currentPhone) {
-                const threadData = await window.api.getConversationThread(currentPhone);
-                if (threadData && threadData.messages && threadData.messages.length > 0) {
-                    const latest = threadData.messages[threadData.messages.length - 1];
-                    if (latest.id !== lastPolledMsgId) {
-                        lastPolledMsgId = latest.id;
-                        handleNewMessageEvent({
-                            id: latest.id,
-                            conversation_id: latest.conversation_id,
-                            phone: currentPhone,
-                            role: latest.role,
-                            content: latest.content,
-                            created_at: latest.created_at,
-                            escalated: latest.escalated,
-                            escalation_reason: latest.escalation_reason,
-                            contact_mode: threadData.contact ? threadData.contact.mode : 'BOT'
-                        });
-                    }
-                }
+    // Skip if WS is connected — real-time updates already handled
+    if (ws && ws.readyState === WebSocket.OPEN) return;
+    // Skip if no API client, no auth, or no active thread
+    if (!window.api || !window.api.password || !currentPhone) return;
+    // Guard against overlapping polls
+    if (pollInFlight) return;
+    pollInFlight = true;
+    try {
+        const threadData = await window.api.getConversationThread(currentPhone);
+        if (threadData && threadData.messages && threadData.messages.length > 0) {
+            const latest = threadData.messages[threadData.messages.length - 1];
+            if (latest.id !== lastPolledMsgId) {
+                lastPolledMsgId = latest.id;
+                handleNewMessageEvent({
+                    id: latest.id,
+                    conversation_id: latest.conversation_id,
+                    phone: currentPhone,
+                    role: latest.role,
+                    content: latest.content,
+                    created_at: latest.created_at,
+                    escalated: latest.escalated,
+                    escalation_reason: latest.escalation_reason,
+                    contact_mode: threadData.contact ? threadData.contact.mode : 'BOT'
+                });
             }
-        } catch (e) {
-            // silent catch
         }
+    } catch (e) {
+        // silent catch — network may be down
+    } finally {
+        pollInFlight = false;
     }
-}, 3000);
+}, 8000);
 
 let conversationPage = { search: '', before: null, hasMore: false };
 
