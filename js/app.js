@@ -644,10 +644,64 @@ function renderThread(data) {
 
     if (window.lucide) lucide.createIcons({}, document.getElementById('thread-view'));
 
-    // Reservation details
+    // Reservation details — prefer real booking data over legacy conversation fields
     const resDetails = document.getElementById('reservation-details');
     document.getElementById('edit-booking-btn').style.display = 'block';
-    if (conversation.bungalow) {
+    const booking = data.booking;
+
+    if (booking) {
+        const statusColors = {
+            confirmed: '#0d9488',
+            checked_in: '#2563eb',
+            completed: '#6b7280',
+            cancelled: '#e53e3e'
+        };
+        const statusColor = statusColors[booking.status] || 'var(--accent-teal)';
+        const statusLabel = booking.status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const cur = booking.currency || 'USD';
+
+        const bungalowList = booking.bungalows && booking.bungalows.length > 0
+            ? booking.bungalows.join(', ')
+            : 'Not assigned';
+
+        let html = `
+            <div class="details-row" style="margin-bottom: 8px;">
+                <span class="booking-status-badge" style="background:${statusColor};color:#fff;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;">
+                    ${statusLabel}
+                </span>
+            </div>
+            <div class="details-row"><span class="details-label">Bungalow</span> <span>${bungalowList}</span></div>
+            <div class="details-row"><span class="details-label">Check-in</span> <span>${booking.check_in || 'N/A'}</span></div>
+            <div class="details-row"><span class="details-label">Check-out</span> <span>${booking.check_out || 'N/A'}</span></div>
+            <div class="details-row"><span class="details-label">Guests</span> <span>${booking.guest_count || 1}${booking.has_pets ? ' 🐾' : ''}</span></div>
+        `;
+
+        // Financials section
+        if (booking.total_amount > 0) {
+            html += `
+                <div style="border-top:1px solid var(--border);margin:10px 0 6px;"></div>
+                <div class="details-row"><span class="details-label">Total</span> <span style="font-weight:600;">$${booking.total_amount.toFixed(2)} ${cur}</span></div>
+            `;
+            if (booking.deposit_amount > 0) {
+                html += `<div class="details-row"><span class="details-label">Deposit Paid</span> <span style="color:#0d9488;">$${booking.deposit_amount.toFixed(2)}</span></div>`;
+            }
+            if (booking.refundable_deposit > 0) {
+                html += `<div class="details-row"><span class="details-label">Refundable Dep.</span> <span>$${booking.refundable_deposit.toFixed(2)}</span></div>`;
+            }
+            if (booking.balance_due > 0) {
+                html += `<div class="details-row"><span class="details-label">Balance Due</span> <span style="color:#e53e3e;font-weight:600;">$${booking.balance_due.toFixed(2)}</span></div>`;
+            }
+            if (booking.payment_due_date) {
+                html += `<div class="details-row"><span class="details-label">Payment Due</span> <span>${booking.payment_due_date}</span></div>`;
+            }
+            if (booking.deposit_due_date) {
+                html += `<div class="details-row"><span class="details-label">Deposit Due</span> <span>${booking.deposit_due_date}</span></div>`;
+            }
+        }
+
+        resDetails.innerHTML = html;
+    } else if (conversation.bungalow) {
+        // Fallback to legacy conversation fields
         resDetails.innerHTML = `
             <div class="details-row"><span class="details-label">Bungalow</span> <span>${conversation.bungalow}</span></div>
             <div class="details-row"><span class="details-label">Check-in</span> <span>${conversation.check_in || 'N/A'}</span></div>
