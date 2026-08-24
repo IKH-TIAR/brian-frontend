@@ -151,12 +151,31 @@ function renderBookingsList() {
 }
 
 async function openBookingDetailModal(bookingId) {
+    const modal = document.getElementById('booking-detail-modal');
+    const spinner = document.getElementById('bd-loading-spinner');
+    const form = document.getElementById('booking-edit-form');
+    const statusContainer = document.getElementById('bd-status-container');
+    const titleEl = document.getElementById('bd-title');
+
+    if (modal) modal.classList.add('active');
+
+    // Show loading state immediately while fetching
+    if (spinner) spinner.style.display = 'block';
+    if (form) form.style.display = 'none';
+    if (statusContainer) statusContainer.style.display = 'none';
+    if (titleEl) titleEl.textContent = 'Loading Booking Details...';
+
     try {
         currentBookingDetail = await window.api.getBooking(bookingId);
         renderBookingDetail();
-        document.getElementById('booking-detail-modal')?.classList.add('active');
+        if (spinner) spinner.style.display = 'none';
+        if (form) form.style.display = 'block';
+        if (statusContainer) statusContainer.style.display = 'flex';
     } catch (err) {
-        alert("Failed to load booking details: " + err.message);
+        if (spinner) spinner.style.display = 'none';
+        if (titleEl) titleEl.textContent = 'Error Loading Booking';
+        if (window.showToast) window.showToast("Failed to load booking details: " + err.message, "error");
+        else alert("Failed to load booking details: " + err.message);
     }
 }
 

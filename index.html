@@ -617,6 +617,7 @@
                 <h3 id="bd-title">Booking Details</h3>
                 <button class="icon-btn" id="close-booking-detail-btn"><i data-lucide="x"></i></button>
             </div>
+            <div id="bd-loading-spinner" class="list-loading" style="display: none; padding: 4rem 0;"></div>
             <div id="bd-status-container" style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;"></div>
 
             <form id="booking-edit-form">
@@ -722,7 +723,7 @@
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" id="delete-booking-btn" class="btn-delete" onclick="window.handleDeleteBooking && window.handleDeleteBooking()" style="margin-right: auto; background: #e53e3e; color: #fff;">Delete Booking</button>
+                    <button type="button" id="delete-booking-btn" class="btn-delete" style="margin-right: auto; background: #e53e3e; color: #fff;">Delete Booking</button>
                     <button type="button" class="btn-secondary" onclick="closeBookingDetailModal()">Cancel</button>
                     <button type="submit" class="btn-primary">Save Booking</button>
                 </div>
@@ -944,7 +945,7 @@
 
     <script src="js/api.js?v=10"></script>
     <script src="js/app.js?v=12"></script>
-    <script src="js/bookings.js?v=4"></script>
+    <script src="js/bookings.js?v=5"></script>
 </body>
 
 </html>
