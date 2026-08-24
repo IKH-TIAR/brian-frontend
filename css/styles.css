@@ -166,15 +166,17 @@ body {
 /* Sidebar */
 .sidebar {
     min-height: 0;
+    overflow: hidden;
 }
 .sidebar-header {
-    padding: 1.5rem 1rem 1rem;
+    padding: 1.25rem 1rem 0.75rem;
     border-bottom: 1px solid var(--border);
     position: relative;
     flex-shrink: 0;
+    overflow: visible;
 }
 .conversation-list {
-    flex: 1;
+    flex: 1 1 0;
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
