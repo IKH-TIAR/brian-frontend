@@ -1137,31 +1137,23 @@ function setupEventListeners() {
             params[input.name] = input.value;
         });
 
-        // Balance due command: Auto-format any entered number to $X.XX format required by WhatsApp template
+        // Balance due command: Auto-format typed number to $X.XX format. If left empty, backend auto-fetches from Booking DB.
         if (cmdName === 'balance_due') {
             const rawVal = params['amount'] || '';
             const num = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
-            if (isNaN(num) || num <= 0) {
-                showToast("Please enter a valid balance due amount (e.g. 150 or $150.00)", "warning");
-                submitBtn.disabled = false;
-                submitBtn.textContent = origText;
-                return;
+            if (!isNaN(num) && num > 0) {
+                params['amount'] = `$${num.toFixed(2)}`;
             }
-            params['amount'] = `$${num.toFixed(2)}`;
         }
 
-        // Deposit Received: validate amount before sending.
+        // Deposit Received command: Auto-format typed number. If left empty, backend auto-fetches from Booking DB.
         if (cmdName === 'deposit_received') {
             const rawVal = params['deposit_amount'] || params['amount'] || params['deposit'] || '';
             const depVal = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
-            if (!depVal || depVal <= 0) {
-                showToast('Please enter a valid deposit amount received (e.g. 150 or 150.00).', "warning");
-                submitBtn.disabled = false;
-                submitBtn.textContent = origText;
-                return;
+            if (!isNaN(depVal) && depVal > 0) {
+                params['deposit_amount'] = depVal;
+                params['amount'] = depVal;
             }
-            params['deposit_amount'] = depVal;
-            params['amount'] = depVal;
         }
 
 

@@ -378,15 +378,13 @@ function launchBookingCommand(commandCode, phone, defaultAmount = '') {
 async function executeCommandDirectly(commandCode, phone, amount = '') {
     let params = {};
     if (commandCode === 'balance_due') {
-        const val = prompt("Enter balance due amount (e.g. 150 or $150.00):", amount || "$150.00");
-        if (!val) return;
-        const num = parseFloat(String(val).replace(/[^0-9.]/g, ''));
-        if (isNaN(num) || num <= 0) {
-            if (window.showToast) window.showToast("Please enter a valid balance due amount (e.g. 150 or $150.00)", "warning");
-            else alert("Please enter a valid balance due amount (e.g. 150 or $150.00)");
-            return;
+        const val = prompt("Enter balance due amount (press OK to auto-pull from booking DB):", amount || "");
+        if (val !== null && val.trim() !== '') {
+            const num = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+            if (!isNaN(num) && num > 0) {
+                params = { amount: `$${num.toFixed(2)}` };
+            }
         }
-        params = { amount: `$${num.toFixed(2)}` };
     }
     try {
         await window.api.executeCommand(commandCode, phone, params);
