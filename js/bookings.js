@@ -201,6 +201,7 @@ function renderBookingDetail() {
     document.getElementById('bd-currency').value = b.currency || 'USD';
     document.getElementById('bd-total-amount').value = b.total_amount || 0;
     document.getElementById('bd-deposit-amount').value = b.deposit_amount || 0;
+    document.getElementById('bd-refundable-deposit').value = b.refundable_deposit || 0;
     document.getElementById('bd-balance-due').value = b.balance_due || 0;
     document.getElementById('bd-deposit-due-date').value = b.deposit_due_date || '';
     document.getElementById('bd-payment-due-date').value = b.payment_due_date || '';
@@ -280,6 +281,7 @@ async function handleSaveBooking(e) {
         currency: document.getElementById('bd-currency').value,
         total_amount: parseFloat(document.getElementById('bd-total-amount').value) || 0,
         deposit_amount: parseFloat(document.getElementById('bd-deposit-amount').value) || 0,
+        refundable_deposit: parseFloat(document.getElementById('bd-refundable-deposit').value) || 0,
         balance_due: parseFloat(document.getElementById('bd-balance-due').value) || 0,
         deposit_due_date: document.getElementById('bd-deposit-due-date').value || null,
         payment_due_date: document.getElementById('bd-payment-due-date').value || null,

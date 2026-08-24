@@ -735,6 +735,25 @@ function setupEventListeners() {
         });
     }
 
+    // Conversations sidebar header refresh button
+    const convRefreshBtn = document.getElementById('conversations-refresh-btn');
+    if (convRefreshBtn) {
+        convRefreshBtn.addEventListener('click', async () => {
+            convRefreshBtn.classList.add('spinning');
+            try {
+                const tasks = [loadConversations(conversationPage.search)];
+                if (currentPhone) {
+                    tasks.push(loadThread(currentPhone));
+                }
+                await Promise.all(tasks);
+            } catch (err) {
+                console.error("Conversations refresh failed:", err);
+            } finally {
+                setTimeout(() => convRefreshBtn.classList.remove('spinning'), 500);
+            }
+        });
+    }
+
     // Lazy-load the pricing module (34.5 KB) on first use
     let pricingJsLoaded = false;
     let pricingJsLoading = false;

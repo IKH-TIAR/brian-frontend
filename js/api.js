@@ -43,7 +43,14 @@ class ApiClient {
         }
 
         if (!response.ok) {
-            throw new Error(`API Error: ${response.status} ${response.statusText}`);
+            let errorMsg = `${response.status} ${response.statusText}`;
+            try {
+                const errData = await response.json();
+                if (errData && errData.detail) {
+                    errorMsg = typeof errData.detail === 'string' ? errData.detail : JSON.stringify(errData.detail);
+                }
+            } catch (e) { }
+            throw new Error(errorMsg);
         }
 
         return response.json();

@@ -30,10 +30,14 @@
             <div class="sidebar-header">
                 <div class="sidebar-title-row">
                     <h2 style="margin: 0;">Conversations</h2>
-                    <div class="header-menu-container">
-                        <button class="icon-btn header-menu-toggle" id="sidebar-menu-btn" title="Actions Menu" aria-label="Actions Menu">
-                            <i data-lucide="more-vertical"></i>
+                    <div style="display: flex; align-items: center; gap: 0.25rem;">
+                        <button class="icon-btn" id="conversations-refresh-btn" title="Refresh Conversations" aria-label="Refresh Conversations">
+                            <i data-lucide="refresh-cw"></i>
                         </button>
+                        <div class="header-menu-container">
+                            <button class="icon-btn header-menu-toggle" id="sidebar-menu-btn" title="Actions Menu" aria-label="Actions Menu">
+                                <i data-lucide="more-vertical"></i>
+                            </button>
                         <div class="header-dropdown-menu hidden" id="sidebar-dropdown-menu">
                             <button class="dropdown-item" id="open-bookings-btn" onclick="window.openBookingsModal && window.openBookingsModal()">
                                 <i data-lucide="calendar"></i>
@@ -618,7 +622,7 @@
                 <input type="hidden" id="bd-id">
 
                 <!-- Guest & Dates Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                <div class="booking-form-grid" style="margin-bottom: 1rem;">
                     <div>
                         <label class="form-label-sm">Guest Full Name</label>
                         <input type="text" id="bd-guest-name" class="form-input-sm" style="width: 100%;">
@@ -663,7 +667,7 @@
                 </div>
 
                 <!-- Financials Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border);">
+                <div class="booking-financials-grid" style="margin-bottom: 1rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border);">
                     <div>
                         <label class="form-label-sm">Total Amount ($)</label>
                         <input type="number" step="0.01" min="0" id="bd-total-amount" class="form-input-sm" style="width: 100%;">
@@ -671,6 +675,10 @@
                     <div>
                         <label class="form-label-sm">Deposit Amount ($)</label>
                         <input type="number" step="0.01" min="0" id="bd-deposit-amount" class="form-input-sm" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Refundable Deposit ($)</label>
+                        <input type="number" step="0.01" min="0" id="bd-refundable-deposit" class="form-input-sm" style="width: 100%;">
                     </div>
                     <div>
                         <label class="form-label-sm">Balance Due ($)</label>
