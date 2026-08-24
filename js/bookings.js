@@ -277,7 +277,18 @@ function renderBookingDetail() {
 }
 
 async function triggerStatusTransition(bookingId, newStatus) {
-    if (!confirm(`Are you sure you want to change status to ${newStatus.toUpperCase()}?`)) return;
+    const isCancel = newStatus === 'cancelled';
+    const confirmed = await window.showConfirmModal({
+        title: isCancel ? 'Cancel Booking' : 'Update Booking Status',
+        message: `Are you sure you want to change this booking status to ${newStatus.toUpperCase()}?`,
+        confirmText: isCancel ? 'Cancel Booking' : 'Update Status',
+        cancelText: 'Keep Current Status',
+        isDanger: isCancel,
+        icon: isCancel ? '🚫' : '🔄'
+    });
+
+    if (!confirmed) return;
+
     try {
         await window.api.updateBookingStatus(bookingId, newStatus);
         if (window.showToast) window.showToast(`Status updated to ${newStatus.toUpperCase()}`, "success");
@@ -293,9 +304,18 @@ async function handleDeleteBooking() {
     const id = document.getElementById('bd-id').value;
     const bName = document.getElementById('bd-guest-name').value || 'this booking';
     if (!id) return;
-    if (!confirm(`Are you sure you want to PERMANENTLY DELETE booking for "${bName}"?\n\nThis action cannot be undone.`)) {
-        return;
-    }
+
+    const confirmed = await window.showConfirmModal({
+        title: 'Delete Booking',
+        message: `Are you sure you want to PERMANENTLY DELETE the booking for "${bName}"?\n\nThis action cannot be undone.`,
+        confirmText: 'Delete Booking',
+        cancelText: 'Cancel',
+        isDanger: true,
+        icon: '🗑️'
+    });
+
+    if (!confirmed) return;
+
     try {
         await window.api.deleteBooking(id);
         if (window.showToast) window.showToast("Booking deleted successfully!", "success");

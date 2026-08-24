@@ -24,6 +24,54 @@ function dismissToast(el) {
 }
 window.showToast = showToast;
 
+// ── Global Reusable Confirm Modal ──
+function showConfirmModal(options = {}) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const iconEl = document.getElementById('confirm-modal-icon');
+        const titleEl = document.getElementById('confirm-modal-title');
+        const messageEl = document.getElementById('confirm-modal-message');
+        const submitBtn = document.getElementById('confirm-modal-submit');
+        const cancelBtn = document.getElementById('confirm-modal-cancel');
+
+        if (!modal) {
+            resolve(confirm(options.message || options.title || 'Are you sure?'));
+            return;
+        }
+
+        iconEl.textContent = options.icon || (options.isDanger ? '🗑️' : '⚠️');
+        titleEl.textContent = options.title || 'Are you sure?';
+        messageEl.textContent = options.message || '';
+        submitBtn.textContent = options.confirmText || (options.isDanger ? 'Delete' : 'Confirm');
+        cancelBtn.textContent = options.cancelText || 'Cancel';
+
+        if (options.isDanger) {
+            submitBtn.style.background = '#e53e3e';
+            submitBtn.style.color = '#ffffff';
+        } else {
+            submitBtn.style.background = 'var(--accent-teal)';
+            submitBtn.style.color = '#ffffff';
+        }
+
+        modal.classList.add('active');
+
+        function cleanup(result) {
+            modal.classList.remove('active');
+            submitBtn.removeEventListener('click', onConfirm);
+            cancelBtn.removeEventListener('click', onCancel);
+            resolve(result);
+        }
+
+        function onConfirm() { cleanup(true); }
+        function onCancel() { cleanup(false); }
+
+        submitBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+    });
+}
+window.showConfirmModal = showConfirmModal;
+
+
 document.addEventListener('DOMContentLoaded', () => {
     if (window.lucide) lucide.createIcons();
 
@@ -911,7 +959,15 @@ function setupEventListeners() {
         if (btn.disabled) return;
 
         if (!currentPhone) return;
-        if (!confirm("Are you sure you want to completely clear the chat history for this guest? This cannot be undone.")) return;
+        const confirmed = await showConfirmModal({
+            title: 'Clear Chat History',
+            message: 'Are you sure you want to completely clear the chat history for this guest? This action cannot be undone.',
+            confirmText: 'Clear History',
+            cancelText: 'Cancel',
+            isDanger: true,
+            icon: '🗑️'
+        });
+        if (!confirmed) return;
 
         const origHTML = btn.innerHTML;
         btn.innerHTML = `<i data-lucide="loader" class="spin" style="width: 16px; height: 16px;"></i> Clearing...`;
@@ -926,10 +982,11 @@ function setupEventListeners() {
                 btn.disabled = false;
                 btn.innerHTML = origHTML;
                 if (window.lucide) lucide.createIcons({}, btn);
+                showToast("Chat history cleared successfully!", "success");
             }, 1000);
         } catch (err) {
             console.error("Failed to clear history", err);
-            alert("Failed to clear history");
+            showToast("Failed to clear history: " + (err.message || err), "error");
             btn.disabled = false;
             btn.innerHTML = origHTML;
             if (window.lucide) lucide.createIcons({}, btn);
@@ -1622,13 +1679,22 @@ async function saveBungalow() {
 }
 
 async function deleteBungalow(id, name) {
-    if (!confirm(`Are you sure you want to delete bungalow "${name}"? This cannot be undone.`)) return;
+    const confirmed = await showConfirmModal({
+        title: 'Delete Bungalow',
+        message: `Are you sure you want to delete bungalow "${name}"? This action cannot be undone.`,
+        confirmText: 'Delete Bungalow',
+        cancelText: 'Cancel',
+        isDanger: true,
+        icon: '🗑️'
+    });
+    if (!confirmed) return;
 
     try {
         await window.api.deleteBungalow(id);
+        showToast("Bungalow deleted successfully!", "success");
         await loadBungalows();
     } catch (e) {
         console.error('Failed to delete bungalow:', e);
-        alert('Failed to delete bungalow.');
+        showToast('Failed to delete bungalow.', "error");
     }
 }
