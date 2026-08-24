@@ -26,6 +26,7 @@ function initBookingsModule() {
 
     // Booking Forms & Actions
     document.getElementById('booking-edit-form')?.addEventListener('submit', handleSaveBooking);
+    document.getElementById('delete-booking-btn')?.addEventListener('click', handleDeleteBooking);
 
     // Template Config Forms
     document.getElementById('tc-edit-form')?.addEventListener('submit', handleSaveTemplateConfig);
