@@ -389,7 +389,7 @@ async function executeCommandDirectly(commandCode, phone, amount = '') {
         params = { amount: `$${num.toFixed(2)}` };
     }
     try {
-        await window.api.executeCommand({ command: commandCode, phone: phone, params: params });
+        await window.api.executeCommand(commandCode, phone, params);
         if (window.showToast) window.showToast(`Command '${commandCode}' executed successfully!`, "success");
     } catch (err) {
         if (window.showToast) window.showToast("Command execution failed: " + err.message, "error");
