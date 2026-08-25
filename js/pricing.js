@@ -842,6 +842,7 @@ async function loadPricingSettings() {
     if (document.getElementById('ps-pet-fee')) document.getElementById('ps-pet-fee').value = s.default_pet_fee;
     if (document.getElementById('ps-extra-person-fee')) document.getElementById('ps-extra-person-fee').value = s.default_extra_person_fee;
     if (document.getElementById('ps-deposit')) document.getElementById('ps-deposit').value = s.multi_property_refundable_deposit;
+    if (document.getElementById('ps-exchange-rate')) document.getElementById('ps-exchange-rate').value = s.usd_to_crc_exchange_rate || 452.94;
 
     currentPricingSettingsData = s.settings || [];
     renderDynamicPricingSettings();
@@ -918,6 +919,7 @@ function setupSettingsForm() {
                 default_pet_fee: parseFloat(document.getElementById('ps-pet-fee')?.value || 30),
                 default_extra_person_fee: parseFloat(document.getElementById('ps-extra-person-fee')?.value || 10),
                 multi_property_refundable_deposit: parseFloat(document.getElementById('ps-deposit')?.value || 100),
+                usd_to_crc_exchange_rate: parseFloat(document.getElementById('ps-exchange-rate')?.value || 452.94),
             };
 
             const btn = document.getElementById('save-pricing-settings-btn');
@@ -928,9 +930,11 @@ function setupSettingsForm() {
 
             try {
                 await window.api.updatePricingSettings(data);
-                alert("Pricing settings saved successfully!");
+                if (window.showToast) window.showToast("Pricing settings saved successfully!", "success");
+                else alert("Pricing settings saved successfully!");
             } catch (err) {
-                alert("Failed to save settings: " + err.message);
+                if (window.showToast) window.showToast("Failed to save settings: " + err.message, "error");
+                else alert("Failed to save settings: " + err.message);
             } finally {
                 if (btn) {
                     btn.disabled = false;

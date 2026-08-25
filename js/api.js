@@ -343,16 +343,16 @@ class ApiClient {
         });
     }
 
-    async confirmDeposit(phone, depositAmount, paymentDueDate = null) {
+    async confirmDeposit(phone, depositAmount, currency = 'USD', paymentDueDate = null) {
         return this.request('/admin/bookings/confirm-deposit', {
             method: 'POST',
             body: JSON.stringify({
                 phone: phone,
                 deposit_amount: depositAmount,
+                currency: currency,
                 payment_due_date: paymentDueDate
             })
         });
-
     }
 
     // Template Config API

@@ -31,15 +31,18 @@
                 <div class="sidebar-title-row">
                     <h2 style="margin: 0;">Conversations</h2>
                     <div style="display: flex; align-items: center; gap: 0.25rem;">
-                        <button class="icon-btn" id="conversations-refresh-btn" title="Refresh Conversations" aria-label="Refresh Conversations">
+                        <button class="icon-btn" id="conversations-refresh-btn" title="Refresh Conversations"
+                            aria-label="Refresh Conversations">
                             <i data-lucide="refresh-cw"></i>
                         </button>
                         <div class="header-menu-container">
-                            <button class="icon-btn header-menu-toggle" id="sidebar-menu-btn" title="Actions Menu" aria-label="Actions Menu">
+                            <button class="icon-btn header-menu-toggle" id="sidebar-menu-btn" title="Actions Menu"
+                                aria-label="Actions Menu">
                                 <i data-lucide="more-vertical"></i>
                             </button>
                             <div class="header-dropdown-menu hidden" id="sidebar-dropdown-menu">
-                                <button class="dropdown-item" id="open-bookings-btn" onclick="window.openBookingsModal && window.openBookingsModal()">
+                                <button class="dropdown-item" id="open-bookings-btn"
+                                    onclick="window.openBookingsModal && window.openBookingsModal()">
                                     <i data-lucide="calendar"></i>
                                     <span>Bookings Management</span>
                                 </button>
@@ -51,11 +54,13 @@
                                     <i data-lucide="bell"></i>
                                     <span>Enable Notifications</span>
                                 </button>
-                                <button class="dropdown-item" id="open-template-config-btn" onclick="window.openTemplateConfigModal && window.openTemplateConfigModal()">
+                                <button class="dropdown-item" id="open-template-config-btn"
+                                    onclick="window.openTemplateConfigModal && window.openTemplateConfigModal()">
                                     <i data-lucide="map-pin"></i>
                                     <span>Property Templates</span>
                                 </button>
-                                <button class="dropdown-item" id="open-template-sends-btn" onclick="window.openTemplateSendsModal && window.openTemplateSendsModal()">
+                                <button class="dropdown-item" id="open-template-sends-btn"
+                                    onclick="window.openTemplateSendsModal && window.openTemplateSendsModal()">
                                     <i data-lucide="send"></i>
                                     <span>WhatsApp Template Log</span>
                                 </button>
@@ -105,7 +110,8 @@
                         <p id="thread-phone">+506 8888 8888</p>
                     </div>
                     <div class="mode-toggle-container">
-                        <button id="quick-catchup-btn" class="btn-primary quick-catchup-btn" style="display: none;" title="AI Catch Up & Reply">
+                        <button id="quick-catchup-btn" class="btn-primary quick-catchup-btn" style="display: none;"
+                            title="AI Catch Up & Reply">
                             <i data-lucide="zap" style="width: 14px; height: 14px;"></i> AI Catch Up
                         </button>
                         <div class="mode-switch-group">
@@ -169,7 +175,8 @@
                 <div id="commands-container">
 
                 </div>
-                <button id="clear-history-btn" class="btn-primary" style="margin-top: 1.5rem; width: 100%; background: #e53e3e; color: white; display: none; align-items: center; justify-content: center; gap: 8px;">
+                <button id="clear-history-btn" class="btn-primary"
+                    style="margin-top: 1.5rem; width: 100%; background: #e53e3e; color: white; display: none; align-items: center; justify-content: center; gap: 8px;">
                     <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i> Clear History
                 </button>
             </div>
@@ -218,7 +225,9 @@
                 </div>
                 <div class="settings-editor" id="settings-editor" style="display: none;">
                     <div class="mobile-only" style="margin-bottom: 1rem;">
-                        <button type="button" id="mobile-back-settings-btn" class="btn-secondary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem;"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back</button>
+                        <button type="button" id="mobile-back-settings-btn" class="btn-secondary"
+                            style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem;"><i
+                                data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back</button>
                     </div>
                     <form id="command-edit-form">
                         <input type="hidden" id="edit-cmd-id">
@@ -247,7 +256,8 @@
                                     <input type="checkbox" id="edit-cmd-set-bot">
                                     <span class="slider round"></span>
                                 </label>
-                                <span class="toggle-label" style="margin-left: 10px; font-size: 0.85rem;">Set conversation to BOT mode after executing</span>
+                                <span class="toggle-label" style="margin-left: 10px; font-size: 0.85rem;">Set
+                                    conversation to BOT mode after executing</span>
                             </div>
                         </div>
 
@@ -284,7 +294,8 @@
             <div class="modal-header">
                 <h2>Bungalow Codes</h2>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <button class="btn-primary" id="add-bungalow-btn" style="padding: 6px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    <button class="btn-primary" id="add-bungalow-btn"
+                        style="padding: 6px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add
                     </button>
                     <button class="icon-btn close-modal" id="close-bungalows-btn"><i data-lucide="x"></i></button>
@@ -307,9 +318,11 @@
                     <tbody id="bungalow-tbody"></tbody>
                 </table>
                 <div id="bungalow-empty" class="bungalow-empty" style="display: none;">
-                    <i data-lucide="home" style="width: 48px; height: 48px; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                    <i data-lucide="home"
+                        style="width: 48px; height: 48px; color: var(--text-secondary); margin-bottom: 1rem;"></i>
                     <p>No bungalow codes yet.</p>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Click <strong>Add</strong> to create your first entry.</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Click <strong>Add</strong> to create
+                        your first entry.</p>
                 </div>
             </div>
         </div>
@@ -321,41 +334,55 @@
             <form id="bungalow-form">
                 <input type="hidden" id="bungalow-edit-id">
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Bungalow Name *</label>
+                    <label
+                        style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Bungalow
+                        Name *</label>
                     <input type="text" id="bf-bungalow" required
                         style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group" style="margin-bottom: 1rem;">
-                        <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Door Code</label>
+                        <label
+                            style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Door
+                            Code</label>
                         <input type="text" id="bf-door-code"
                             style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                     </div>
                     <div class="form-group" style="margin-bottom: 1rem;">
-                        <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Lockbox Code</label>
+                        <label
+                            style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Lockbox
+                            Code</label>
                         <input type="text" id="bf-lockbox-code"
                             style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Lockbox Location</label>
+                    <label
+                        style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Lockbox
+                        Location</label>
                     <input type="text" id="bf-lockbox-location"
                         style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group" style="margin-bottom: 1rem;">
-                        <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">WiFi Name</label>
+                        <label
+                            style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">WiFi
+                            Name</label>
                         <input type="text" id="bf-wifi-name"
                             style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                     </div>
                     <div class="form-group" style="margin-bottom: 1rem;">
-                        <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">WiFi Password</label>
+                        <label
+                            style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">WiFi
+                            Password</label>
                         <input type="text" id="bf-wifi-password"
                             style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Special Notes</label>
+                    <label
+                        style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Special
+                        Notes</label>
                     <textarea id="bf-special-notes" rows="3"
                         style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; font-family: inherit; resize: vertical;"></textarea>
                 </div>
@@ -413,7 +440,7 @@
                 <h2>Pricing Management</h2>
                 <button class="icon-btn close-modal" id="close-pricing-btn"><i data-lucide="x"></i></button>
             </div>
-            
+
             <div class="pricing-tabs">
                 <button class="pricing-tab-btn active" data-tab="properties">Properties & Fees</button>
                 <button class="pricing-tab-btn" data-tab="matrix">Seasonal Prices</button>
@@ -426,7 +453,8 @@
                 <!-- TAB 1: PROPERTIES & FEES -->
                 <div id="tab-pricing-properties" class="pricing-tab-panel active">
                     <div class="tab-actions-bar">
-                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Manage properties, rate plans, capacities, fees, deposits, and active status.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Manage properties, rate plans,
+                            capacities, fees, deposits, and active status.</p>
                     </div>
                     <div class="pricing-grid-wrapper">
                         <table class="pricing-table">
@@ -451,7 +479,8 @@
 
                 <!-- TAB 2: SEASONAL PRICES MATRIX -->
                 <div id="tab-pricing-matrix" class="pricing-tab-panel">
-                    <div class="tab-actions-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <div class="tab-actions-bar"
+                        style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
                         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                             <select id="matrix-property-filter" class="form-select-sm">
                                 <option value="">All Properties</option>
@@ -463,10 +492,12 @@
                             </select>
                         </div>
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <button class="btn-secondary" id="bulk-adjust-btn" style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem;">
+                            <button class="btn-secondary" id="bulk-adjust-btn"
+                                style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem;">
                                 <i data-lucide="sliders" style="width: 14px; height: 14px;"></i> Bulk Adjust Prices
                             </button>
-                            <button class="btn-primary" id="save-matrix-btn" style="font-size: 0.85rem;">Save Prices</button>
+                            <button class="btn-primary" id="save-matrix-btn" style="font-size: 0.85rem;">Save
+                                Prices</button>
                         </div>
                     </div>
                     <div class="pricing-grid-wrapper">
@@ -479,9 +510,12 @@
 
                 <!-- TAB 3: SEASONS & DATES -->
                 <div id="tab-pricing-seasons" class="pricing-tab-panel">
-                    <div class="tab-actions-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Define seasons, priorities, and date ranges.</p>
-                        <button class="btn-primary" id="add-season-period-btn" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+                    <div class="tab-actions-bar"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Define seasons, priorities, and
+                            date ranges.</p>
+                        <button class="btn-primary" id="add-season-period-btn"
+                            style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
                             <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Date Range
                         </button>
                     </div>
@@ -490,9 +524,12 @@
 
                 <!-- TAB 4: PROMOTIONS -->
                 <div id="tab-pricing-promotions" class="pricing-tab-panel">
-                    <div class="tab-actions-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Create and manage special promotional prices.</p>
-                        <button class="btn-primary" id="add-promotion-btn" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+                    <div class="tab-actions-bar"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Create and manage special
+                            promotional prices.</p>
+                        <button class="btn-primary" id="add-promotion-btn"
+                            style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
                             <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Promotion
                         </button>
                     </div>
@@ -503,20 +540,37 @@
                 <div id="tab-pricing-settings" class="pricing-tab-panel">
                     <form id="pricing-settings-form" style="max-width: 500px; margin-top: 1rem;">
                         <div class="form-group" style="margin-bottom: 1rem;">
-                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Currency</label>
-                            <input type="text" id="ps-currency" value="USD" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Currency</label>
+                            <input type="text" id="ps-currency" value="USD" required
+                                style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                         </div>
                         <div class="form-group" style="margin-bottom: 1rem;">
-                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Default Pet Fee (per stay)</label>
-                            <input type="number" step="0.01" min="0" id="ps-pet-fee" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Default
+                                Pet Fee (per stay)</label>
+                            <input type="number" step="0.01" min="0" id="ps-pet-fee" required
+                                style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                         </div>
                         <div class="form-group" style="margin-bottom: 1rem;">
-                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Default Extra-Person Fee (per person / night)</label>
-                            <input type="number" step="0.01" min="0" id="ps-extra-person-fee" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Default
+                                Extra-Person Fee (per person / night)</label>
+                            <input type="number" step="0.01" min="0" id="ps-extra-person-fee" required
+                                style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Multi-Property
+                                Refundable Deposit</label>
+                            <input type="number" step="0.01" min="0" id="ps-deposit" required
+                                style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                         </div>
                         <div class="form-group" style="margin-bottom: 1.5rem;">
-                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Multi-Property Refundable Deposit</label>
-                            <input type="number" step="0.01" min="0" id="ps-deposit" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">USD to Colones Exchange Rate (1 USD = ? CRC)</label>
+                            <input type="number" step="0.01" min="1" id="ps-exchange-rate" value="452.94" required
+                                style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                         </div>
                         <button type="submit" id="save-pricing-settings-btn" class="btn-primary">Save Settings</button>
                     </form>
@@ -534,35 +588,42 @@
                 <input type="hidden" id="rpe-plan-id">
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Configuration Name</label>
-                    <input type="text" id="rpe-name" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <input type="text" id="rpe-name" required
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">Standard Capacity</label>
-                        <input type="number" min="1" id="rpe-std-cap" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        <input type="number" min="1" id="rpe-std-cap" required
+                            style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                     </div>
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">Maximum Capacity</label>
-                        <input type="number" min="1" id="rpe-max-cap" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        <input type="number" min="1" id="rpe-max-cap" required
+                            style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">Cleaning Fee ($)</label>
-                        <input type="number" step="0.01" min="0" id="rpe-cleaning-fee" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        <input type="number" step="0.01" min="0" id="rpe-cleaning-fee" required
+                            style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                     </div>
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">Extra Person Fee/Nt ($)</label>
-                        <input type="number" step="0.01" min="0" id="rpe-extra-person-fee" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                        <input type="number" step="0.01" min="0" id="rpe-extra-person-fee" required
+                            style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Refundable Deposit ($)</label>
-                    <input type="number" step="0.01" min="0" id="rpe-deposit" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <input type="number" step="0.01" min="0" id="rpe-deposit" required
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Minimum Nights</label>
-                    <input type="number" min="1" id="rpe-min-nights" value="1" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <input type="number" min="1" id="rpe-min-nights" value="1" required
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
                     <label class="checkbox-label" style="margin-bottom: 0;">
@@ -587,8 +648,10 @@
                 <h2>Bookings Management</h2>
                 <button class="icon-btn" id="close-bookings-btn"><i data-lucide="x"></i></button>
             </div>
-            <div class="bookings-filters-bar" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;">
-                <input type="text" id="bookings-search-input" placeholder="Search ref, guest, phone..." class="form-input-sm" style="flex: 1; min-width: 180px;">
+            <div class="bookings-filters-bar"
+                style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;">
+                <input type="text" id="bookings-search-input" placeholder="Search ref, guest, phone..."
+                    class="form-input-sm" style="flex: 1; min-width: 180px;">
                 <select id="bookings-status-filter" class="form-select-sm">
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
@@ -599,7 +662,8 @@
                     <option value="cancelled">Cancelled</option>
                     <option value="no_show">No Show</option>
                 </select>
-                <div style="display: flex; gap: 0.25rem; align-items: center; font-size: 0.8rem; color: var(--text-secondary);">
+                <div
+                    style="display: flex; gap: 0.25rem; align-items: center; font-size: 0.8rem; color: var(--text-secondary);">
                     <span>In:</span>
                     <input type="date" id="bookings-date-from" class="form-input-sm">
                     <span>to</span>
@@ -618,7 +682,9 @@
                 <button class="icon-btn" id="close-booking-detail-btn"><i data-lucide="x"></i></button>
             </div>
             <div id="bd-loading-spinner" class="list-loading" style="display: none; padding: 4rem 0;"></div>
-            <div id="bd-status-container" style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;"></div>
+            <div id="bd-status-container"
+                style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+            </div>
 
             <form id="booking-edit-form">
                 <input type="hidden" id="bd-id">
@@ -643,7 +709,8 @@
                     </div>
                     <div>
                         <label class="form-label-sm">Checkout Time</label>
-                        <input type="text" id="bd-checkout-time" class="form-input-sm" placeholder="11:00:00" style="width: 100%;">
+                        <input type="text" id="bd-checkout-time" class="form-input-sm" placeholder="11:00:00"
+                            style="width: 100%;">
                     </div>
                     <div>
                         <label class="form-label-sm">Guest Count</label>
@@ -669,22 +736,27 @@
                 </div>
 
                 <!-- Financials Grid -->
-                <div class="booking-financials-grid" style="margin-bottom: 1rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border);">
+                <div class="booking-financials-grid"
+                    style="margin-bottom: 1rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border);">
                     <div>
                         <label class="form-label-sm">Total Amount ($)</label>
-                        <input type="number" step="0.01" min="0" id="bd-total-amount" class="form-input-sm" style="width: 100%;">
+                        <input type="number" step="0.01" min="0" id="bd-total-amount" class="form-input-sm"
+                            style="width: 100%;">
                     </div>
                     <div>
                         <label class="form-label-sm">Deposit Amount ($)</label>
-                        <input type="number" step="0.01" min="0" id="bd-deposit-amount" class="form-input-sm" style="width: 100%;">
+                        <input type="number" step="0.01" min="0" id="bd-deposit-amount" class="form-input-sm"
+                            style="width: 100%;">
                     </div>
                     <div>
                         <label class="form-label-sm">Refundable Deposit ($)</label>
-                        <input type="number" step="0.01" min="0" id="bd-refundable-deposit" class="form-input-sm" style="width: 100%;">
+                        <input type="number" step="0.01" min="0" id="bd-refundable-deposit" class="form-input-sm"
+                            style="width: 100%;">
                     </div>
                     <div>
                         <label class="form-label-sm">Balance Due ($)</label>
-                        <input type="number" step="0.01" min="0" id="bd-balance-due" class="form-input-sm" style="width: 100%;">
+                        <input type="number" step="0.01" min="0" id="bd-balance-due" class="form-input-sm"
+                            style="width: 100%;">
                     </div>
                     <div>
                         <label class="form-label-sm">Deposit Due Date</label>
@@ -699,31 +771,39 @@
                 <!-- Internal Notes -->
                 <div style="margin-bottom: 1rem;">
                     <label class="form-label-sm">Internal Notes</label>
-                    <textarea id="bd-notes" rows="2" class="form-input-sm" style="width: 100%; font-family: inherit;"></textarea>
+                    <textarea id="bd-notes" rows="2" class="form-input-sm"
+                        style="width: 100%; font-family: inherit;"></textarea>
                 </div>
 
                 <!-- Booking Units Section -->
                 <div style="margin-bottom: 1.25rem;">
-                    <h4 style="font-size: 0.85rem; color: var(--accent-teal); margin-bottom: 0.5rem;">Reserved Units</h4>
+                    <h4 style="font-size: 0.85rem; color: var(--accent-teal); margin-bottom: 0.5rem;">Reserved Units
+                    </h4>
                     <div id="bd-units-container"></div>
                 </div>
 
                 <!-- Read-Only Collapsible Pricing Snapshot -->
                 <div style="margin-bottom: 1.25rem;">
-                    <button type="button" class="btn-sm btn-secondary" onclick="togglePricingSnapshot()" style="font-size: 0.75rem;">
-                        <i data-lucide="code" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i> Toggle Read-Only Pricing Snapshot (JSON)
+                    <button type="button" class="btn-sm btn-secondary" onclick="togglePricingSnapshot()"
+                        style="font-size: 0.75rem;">
+                        <i data-lucide="code"
+                            style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i> Toggle Read-Only
+                        Pricing Snapshot (JSON)
                     </button>
-                    <pre id="bd-pricing-snapshot-json" class="json-snapshot-box" style="display: none; margin-top: 0.5rem; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; max-height: 180px; overflow-y: auto; font-family: monospace;"></pre>
+                    <pre id="bd-pricing-snapshot-json" class="json-snapshot-box"
+                        style="display: none; margin-top: 0.5rem; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; max-height: 180px; overflow-y: auto; font-family: monospace;"></pre>
                 </div>
 
                 <!-- Command Action Buttons -->
                 <div style="margin-bottom: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
-                    <h4 style="font-size: 0.85rem; color: var(--accent-teal); margin-bottom: 0.5rem;">Send Template Commands to Guest</h4>
+                    <h4 style="font-size: 0.85rem; color: var(--accent-teal); margin-bottom: 0.5rem;">Send Template
+                        Commands to Guest</h4>
                     <div id="bd-commands-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap;"></div>
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" id="delete-booking-btn" class="btn-delete" style="margin-right: auto; background: #e53e3e; color: #fff;">Delete Booking</button>
+                    <button type="button" id="delete-booking-btn" class="btn-delete"
+                        style="margin-right: auto; background: #e53e3e; color: #fff;">Delete Booking</button>
                     <button type="button" class="btn-secondary" onclick="closeBookingDetailModal()">Cancel</button>
                     <button type="submit" class="btn-primary">Save Booking</button>
                 </div>
@@ -738,7 +818,8 @@
                 <h2>Property Template Configurations</h2>
                 <button class="icon-btn" id="close-template-config-btn"><i data-lucide="x"></i></button>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Map links, default checkout times, and bungalow code mappings for property templates.</p>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Map links, default
+                checkout times, and bungalow code mappings for property templates.</p>
             <div class="pricing-grid-wrapper">
                 <table class="pricing-table">
                     <thead>
@@ -765,15 +846,18 @@
                 <input type="hidden" id="tc-edit-id">
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Bungalow Code Mapping</label>
-                    <select id="tc-bungalow-select" class="form-select-sm" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;"></select>
+                    <select id="tc-bungalow-select" class="form-select-sm"
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;"></select>
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Google Map Link</label>
-                    <input type="url" id="tc-map-link" placeholder="https://maps.google.com/..." style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <input type="url" id="tc-map-link" placeholder="https://maps.google.com/..."
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Default Checkout Time</label>
-                    <input type="text" id="tc-default-checkout-time" placeholder="11:00:00" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <input type="text" id="tc-default-checkout-time" placeholder="11:00:00"
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div style="margin-bottom: 1.5rem;">
                     <label class="checkbox-label" style="margin-bottom: 0;">
@@ -796,7 +880,8 @@
                 <button class="icon-btn" id="close-template-sends-btn"><i data-lucide="x"></i></button>
             </div>
             <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; align-items: center; flex-wrap: wrap;">
-                <input type="text" id="ts-template-filter" placeholder="Filter by template key..." class="form-input-sm" style="flex: 1; min-width: 200px;">
+                <input type="text" id="ts-template-filter" placeholder="Filter by template key..." class="form-input-sm"
+                    style="flex: 1; min-width: 200px;">
                 <select id="ts-status-filter" class="form-select-sm">
                     <option value="">All Statuses</option>
                     <option value="sent">Sent</option>
@@ -834,7 +919,8 @@
             <form id="bulk-adjust-form">
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Adjustment Type</label>
-                    <select id="ba-type" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <select id="ba-type" required
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                         <option value="percent_increase">Increase by Percentage (%)</option>
                         <option value="percent_decrease">Decrease by Percentage (%)</option>
                         <option value="fixed_increase">Increase by Fixed Amount ($)</option>
@@ -843,18 +929,25 @@
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Value / Amount</label>
-                    <input type="number" step="0.01" min="0" id="ba-amount" placeholder="e.g. 10" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <input type="number" step="0.01" min="0" id="ba-amount" placeholder="e.g. 10" required
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Target Pricing Tiers</label>
                     <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
-                        <label class="checkbox-label" style="margin-bottom: 0;"><input type="checkbox" id="ba-tier-intl" checked> International</label>
-                        <label class="checkbox-label" style="margin-bottom: 0;"><input type="checkbox" id="ba-tier-local" checked> Local</label>
+                        <label class="checkbox-label" style="margin-bottom: 0;"><input type="checkbox" id="ba-tier-intl"
+                                checked> International</label>
+                        <label class="checkbox-label" style="margin-bottom: 0;"><input type="checkbox"
+                                id="ba-tier-local" checked> Local</label>
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Target Seasons</label>
-                    <div id="ba-seasons-checkboxes" style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 120px; overflow-y: auto; background: var(--bg-dark); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border);"></div>
+                    <label
+                        style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Target
+                        Seasons</label>
+                    <div id="ba-seasons-checkboxes"
+                        style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 120px; overflow-y: auto; background: var(--bg-dark); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border);">
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" id="cancel-ba-btn" class="btn-secondary">Cancel</button>
@@ -872,21 +965,25 @@
                 <input type="hidden" id="sp-edit-id">
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Season</label>
-                    <select id="sp-season-select" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;"></select>
+                    <select id="sp-season-select" required
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;"></select>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">Start Date *</label>
-                        <input type="date" id="sp-start-date" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                        <input type="date" id="sp-start-date" required
+                            style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
                     </div>
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">End Date *</label>
-                        <input type="date" id="sp-end-date" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                        <input type="date" id="sp-end-date" required
+                            style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Notes (optional)</label>
-                    <input type="text" id="sp-notes" placeholder="e.g. Easter Week 2026" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <input type="text" id="sp-notes" placeholder="e.g. Easter Week 2026"
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div class="modal-actions">
                     <button type="button" id="cancel-sp-btn" class="btn-secondary">Cancel</button>
@@ -904,20 +1001,24 @@
                 <input type="hidden" id="promo-edit-id">
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Promotion Name *</label>
-                    <input type="text" id="promo-name" required placeholder="e.g. July–November 2026 Promotion" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <input type="text" id="promo-name" required placeholder="e.g. July–November 2026 Promotion"
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="font-size: 0.75rem; color: var(--text-secondary);">Description</label>
-                    <input type="text" id="promo-desc" placeholder="Flat promotional rates for selected properties" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
+                    <input type="text" id="promo-desc" placeholder="Flat promotional rates for selected properties"
+                        style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">Start Date *</label>
-                        <input type="date" id="promo-start-date" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                        <input type="date" id="promo-start-date" required
+                            style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
                     </div>
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">End Date *</label>
-                        <input type="date" id="promo-end-date" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                        <input type="date" id="promo-end-date" required
+                            style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
                     </div>
                 </div>
                 <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem;">
@@ -929,8 +1030,12 @@
                     </label>
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block;">Participating Properties & Promotional Rates ($)</label>
-                    <div id="promo-properties-list" style="max-height: 200px; overflow-y: auto; background: var(--bg-dark); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                    <label
+                        style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block;">Participating
+                        Properties & Promotional Rates ($)</label>
+                    <div id="promo-properties-list"
+                        style="max-height: 200px; overflow-y: auto; background: var(--bg-dark); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem;">
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" id="cancel-promo-btn" class="btn-secondary">Cancel</button>
@@ -942,13 +1047,19 @@
 
     <!-- REUSABLE CONFIRMATION MODAL -->
     <div id="confirm-modal" class="modal" style="z-index: 2000;">
-        <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2rem 1.5rem; border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0,0,0,0.5);">
+        <div class="modal-content"
+            style="max-width: 400px; text-align: center; padding: 2rem 1.5rem; border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0,0,0,0.5);">
             <div id="confirm-modal-icon" style="font-size: 2.2rem; margin-bottom: 0.5rem; line-height: 1;">⚠️</div>
-            <h3 id="confirm-modal-title" style="margin-bottom: 0.5rem; font-size: 1.15rem; color: var(--text-primary);">Are you sure?</h3>
-            <p id="confirm-modal-message" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 1.5rem; white-space: pre-line;"></p>
+            <h3 id="confirm-modal-title" style="margin-bottom: 0.5rem; font-size: 1.15rem; color: var(--text-primary);">
+                Are you sure?</h3>
+            <p id="confirm-modal-message"
+                style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 1.5rem; white-space: pre-line;">
+            </p>
             <div class="modal-actions" style="justify-content: center; gap: 0.75rem;">
-                <button type="button" class="btn-secondary" id="confirm-modal-cancel" style="min-width: 100px;">Cancel</button>
-                <button type="button" class="btn-primary" id="confirm-modal-submit" style="min-width: 100px;">Confirm</button>
+                <button type="button" class="btn-secondary" id="confirm-modal-cancel"
+                    style="min-width: 100px;">Cancel</button>
+                <button type="button" class="btn-primary" id="confirm-modal-submit"
+                    style="min-width: 100px;">Confirm</button>
             </div>
         </div>
     </div>
@@ -956,9 +1067,9 @@
     <!-- Toast Notifications Container -->
     <div id="toast-container"></div>
 
-    <script src="js/api.js?v=11"></script>
-    <script src="js/app.js?v=16"></script>
-    <script src="js/bookings.js?v=9"></script>
+    <script src="js/api.js?v=12"></script>
+    <script src="js/app.js?v=18"></script>
+    <script src="js/bookings.js?v=10"></script>
 </body>
 
 </html>

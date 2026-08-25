@@ -896,7 +896,7 @@ function setupEventListeners() {
         if (pricingJsLoaded || pricingJsLoading) return; // pricing.js binds its own handler after load
         pricingJsLoading = true;
         const s = document.createElement('script');
-        s.src = 'js/pricing.js?v=8';
+        s.src = 'js/pricing.js?v=9';
         s.onload = () => {
             pricingJsLoading = false;
             pricingJsLoaded = true;
@@ -1132,7 +1132,7 @@ function setupEventListeners() {
         const phone = cmdModal.dataset.phone || currentPhone;
         const params = {};
 
-        const inputs = document.querySelectorAll('.cmd-param-input input');
+        const inputs = document.querySelectorAll('.cmd-param-input input, .cmd-param-input select');
         inputs.forEach(input => {
             params[input.name] = input.value;
         });
@@ -1159,7 +1159,8 @@ function setupEventListeners() {
 
         try {
             if (cmdName === 'deposit_received') {
-                await window.api.confirmDeposit(phone, params['deposit_amount']);
+                const payCurrency = params['currency'] || 'USD';
+                await window.api.confirmDeposit(phone, params['deposit_amount'], payCurrency);
             }
             await window.api.executeCommand(cmdName, phone, params);
             cmdModal.classList.remove('active');
@@ -1240,9 +1241,24 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
         }
     }
 
-    // Deposit Received: ensure only a single clean input field for deposit amount is shown.
+    // Deposit Received: configure amount and payment currency fields
     if (cmdObj.command === 'deposit_received') {
-        cmdObj = { ...cmdObj, required_params: [{ name: 'deposit_amount', label: 'Deposit Received ($)', required: true }] };
+        cmdObj = {
+            ...cmdObj,
+            required_params: [
+                { name: 'deposit_amount', label: 'Deposit Amount Paid', required: true },
+                {
+                    name: 'currency',
+                    label: 'Payment Currency (Colones will be auto-converted to USD)',
+                    type: 'select',
+                    options: [
+                        { value: 'USD', label: 'USD ($)' },
+                        { value: 'CRC', label: 'Costa Rican Colones (CRC / ₡)' }
+                    ],
+                    default: 'USD'
+                }
+            ]
+        };
     }
 
     const modal = document.getElementById('command-modal');
@@ -1262,12 +1278,27 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
 
             const isRequired = typeof param === 'object' && param.required === false ? false : true;
             const requiredAttr = isRequired ? 'required' : '';
-            const initialVal = initialParams[paramKey] !== undefined ? initialParams[paramKey] : '';
+            const initialVal = initialParams[paramKey] !== undefined ? initialParams[paramKey] : (param.default || '');
 
-            div.innerHTML = `
-                <label>${escapeHtml(paramLabel)}</label>
-                <input type="text" name="${escapeHtml(paramKey)}" placeholder="${escapeHtml(paramLabel)}" value="${escapeHtml(initialVal)}" ${requiredAttr}>
-            `;
+            if (typeof param === 'object' && (param.type === 'select' || Array.isArray(param.options))) {
+                const optsHtml = (param.options || []).map(opt => {
+                    const val = typeof opt === 'object' ? opt.value : opt;
+                    const lbl = typeof opt === 'object' ? opt.label : opt;
+                    const isSel = (initialVal ? initialVal === val : param.default === val) ? 'selected' : '';
+                    return `<option value="${escapeHtml(val)}" ${isSel}>${escapeHtml(lbl)}</option>`;
+                }).join('');
+                div.innerHTML = `
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">${escapeHtml(paramLabel)}</label>
+                    <select name="${escapeHtml(paramKey)}" class="form-select-sm" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; margin-bottom: 0.75rem;">
+                        ${optsHtml}
+                    </select>
+                `;
+            } else {
+                div.innerHTML = `
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">${escapeHtml(paramLabel)}</label>
+                    <input type="text" name="${escapeHtml(paramKey)}" placeholder="${escapeHtml(paramLabel)}" value="${escapeHtml(initialVal)}" ${requiredAttr} style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; margin-bottom: 0.75rem;">
+                `;
+            }
             paramsContainer.appendChild(div);
         });
     } else {
