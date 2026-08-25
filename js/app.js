@@ -613,6 +613,43 @@ async function loadOlderMessages() {
     }
 }
 
+function openMediaLightbox(imgUrl, downloadUrl) {
+    const modal = document.getElementById('media-lightbox-modal');
+    const img = document.getElementById('lightbox-img');
+    const dlLink = document.getElementById('lightbox-download-link');
+    if (!modal || !img) return;
+
+    img.src = imgUrl;
+    if (dlLink) dlLink.href = downloadUrl;
+    modal.classList.add('active');
+    if (window.lucide) lucide.createIcons({}, modal);
+}
+window.openMediaLightbox = openMediaLightbox;
+
+function closeMediaLightbox() {
+    const modal = document.getElementById('media-lightbox-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        const img = document.getElementById('lightbox-img');
+        if (img) img.src = '';
+    }
+}
+window.closeMediaLightbox = closeMediaLightbox;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('lightbox-close');
+    const modal = document.getElementById('media-lightbox-modal');
+    if (closeBtn) closeBtn.addEventListener('click', closeMediaLightbox);
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeMediaLightbox();
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMediaLightbox();
+    });
+});
+
 function buildMessageEl(msg) {
     const div = document.createElement('div');
     div.className = `message msg-${msg.role}`;
@@ -633,7 +670,7 @@ function buildMessageEl(msg) {
 
         contentHtml = `
             <div class="chat-media-wrapper">
-                <a href="${imgUrl}" target="_blank" title="View Full Image">
+                <a href="${imgUrl}" onclick="event.preventDefault(); openMediaLightbox('${imgUrl}', '${downloadUrl}');" title="Click to view full photo">
                     <img src="${imgUrl}" alt="WhatsApp Image" class="chat-media-img" loading="lazy" />
                 </a>
                 <div class="chat-media-info">
