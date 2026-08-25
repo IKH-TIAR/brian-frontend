@@ -622,10 +622,14 @@ function buildMessageEl(msg) {
     let contentHtml = msg.content;
     if (msg.media_url) {
         const pwd = window.api ? window.api.password : '';
-        const tokenParam = pwd ? `?token=${encodeURIComponent(pwd)}` : '';
+        const params = new URLSearchParams();
+        if (pwd) params.set('token', pwd);
+        params.set('ngrok-skip-browser-warning', '69420');
+        const queryStr = `?${params.toString()}`;
+
         const baseUrl = API_BASE.replace(/\/api$/, '');
-        const imgUrl = `${baseUrl}${msg.media_url}${tokenParam}`;
-        const downloadUrl = `${imgUrl}${tokenParam ? '&' : '?'}download=true`;
+        const imgUrl = `${baseUrl}${msg.media_url}${queryStr}`;
+        const downloadUrl = `${baseUrl}${msg.media_url}${queryStr}&download=true`;
 
         contentHtml = `
             <div class="chat-media-wrapper">
