@@ -25,6 +25,16 @@ function initBookingsModule() {
     document.getElementById('bookings-date-to')?.addEventListener('change', loadBookings);
 
     // Booking Forms & Actions
+    function updateBalanceDue() {
+        const total = parseFloat(document.getElementById('bd-total-amount')?.value) || 0;
+        const deposit = parseFloat(document.getElementById('bd-deposit-amount')?.value) || 0;
+        const balEl = document.getElementById('bd-balance-due');
+        if (balEl) {
+            balEl.value = Math.max(0, total - deposit).toFixed(2);
+        }
+    }
+    document.getElementById('bd-total-amount')?.addEventListener('input', updateBalanceDue);
+    document.getElementById('bd-deposit-amount')?.addEventListener('input', updateBalanceDue);
     document.getElementById('booking-edit-form')?.addEventListener('submit', handleSaveBooking);
     document.getElementById('delete-booking-btn')?.addEventListener('click', handleDeleteBooking);
 
@@ -473,7 +483,7 @@ async function openTemplateConfigEditModal(configId) {
     selectEl.innerHTML = '<option value="">(None)</option>';
 
     try {
-        const bungalows = await window.api.listBungalows();
+        const bungalows = await window.api.getBungalows();
         bungalows.forEach(b => {
             const opt = document.createElement('option');
             opt.value = b.id;

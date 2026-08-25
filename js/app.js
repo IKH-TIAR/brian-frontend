@@ -1171,9 +1171,8 @@ function setupEventListeners() {
 
         const cmdName = cmdModal.dataset.cmd;
         const phone = cmdModal.dataset.phone || currentPhone;
-        const params = {};
-
-        const inputs = document.querySelectorAll('.cmd-param-input input, .cmd-param-input select');
+        const paramsContainer = document.getElementById('cmd-params');
+        const inputs = paramsContainer ? paramsContainer.querySelectorAll('input, select, textarea') : [];
         inputs.forEach(input => {
             params[input.name] = input.value;
         });
@@ -1187,14 +1186,18 @@ function setupEventListeners() {
             }
         }
 
-        // Deposit Received command: Auto-format typed number. If left empty, backend auto-fetches from Booking DB.
+        // Deposit Received command: Required from frontend
         if (cmdName === 'deposit_received') {
             const rawVal = params['deposit_amount'] || params['amount'] || params['deposit'] || '';
             const depVal = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
-            if (!isNaN(depVal) && depVal > 0) {
-                params['deposit_amount'] = depVal;
-                params['amount'] = depVal;
+            if (isNaN(depVal) || depVal <= 0) {
+                showToast("Please enter a valid deposit amount paid.", "error");
+                submitBtn.disabled = false;
+                submitBtn.textContent = origText;
+                return;
             }
+            params['deposit_amount'] = depVal;
+            params['amount'] = depVal;
         }
 
 
@@ -1287,7 +1290,7 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
         cmdObj = {
             ...cmdObj,
             required_params: [
-                { name: 'deposit_amount', label: 'Deposit Amount Paid', required: true },
+                { name: 'deposit_amount', label: 'Deposit Amount Paid *', required: true },
                 {
                     name: 'currency',
                     label: 'Payment Currency (Colones will be auto-converted to USD)',
@@ -1296,7 +1299,8 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
                         { value: 'USD', label: 'USD ($)' },
                         { value: 'CRC', label: 'Costa Rican Colones (CRC / ₡)' }
                     ],
-                    default: 'USD'
+                    default: 'USD',
+                    required: true
                 }
             ]
         };
@@ -1671,9 +1675,12 @@ function renderBungalowTable() {
 
 function escapeHtml(str) {
     if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 function openBungalowForm(id = null) {

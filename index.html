@@ -1009,7 +1009,7 @@
                     <input type="text" id="promo-desc" placeholder="Flat promotional rates for selected properties"
                         style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">Start Date *</label>
                         <input type="date" id="promo-start-date" required
@@ -1019,6 +1019,11 @@
                         <label style="font-size: 0.75rem; color: var(--text-secondary);">End Date *</label>
                         <input type="date" id="promo-end-date" required
                             style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white; color-scheme: dark;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Priority</label>
+                        <input type="number" id="promo-priority" min="0" value="1000" required
+                            style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: white;">
                     </div>
                 </div>
                 <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem;">

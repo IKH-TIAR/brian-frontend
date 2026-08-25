@@ -700,6 +700,7 @@ function openPromotionModal(promoId = null) {
         document.getElementById('promo-end-date').value = existingPromo.end_date;
         document.getElementById('promo-enabled').checked = existingPromo.enabled;
         document.getElementById('promo-waive-pet').checked = existingPromo.waive_pet_fee;
+        if (document.getElementById('promo-priority')) document.getElementById('promo-priority').value = existingPromo.priority !== undefined ? existingPromo.priority : 1000;
     } else {
         document.getElementById('promo-modal-title').textContent = "Add Promotion";
         document.getElementById('promo-edit-id').value = "";
@@ -709,6 +710,7 @@ function openPromotionModal(promoId = null) {
         document.getElementById('promo-end-date').value = "";
         document.getElementById('promo-enabled').checked = true;
         document.getElementById('promo-waive-pet').checked = false;
+        if (document.getElementById('promo-priority')) document.getElementById('promo-priority').value = 1000;
     }
 
     // Populate properties list with price inputs
@@ -721,7 +723,7 @@ function openPromotionModal(promoId = null) {
 
             const row = document.createElement('div');
             row.style.display = 'flex';
-            row.style.justifySpaceBetween = 'space-between';
+            row.style.justifyContent = 'space-between';
             row.style.alignItems = 'center';
             row.style.gap = '1rem';
 
@@ -794,6 +796,7 @@ function setupPromotionForm() {
                 });
             }
 
+            const priorityVal = parseInt(document.getElementById('promo-priority')?.value, 10);
             const payload = {
                 name: name,
                 description: desc,
@@ -801,7 +804,7 @@ function setupPromotionForm() {
                 end_date: endDate,
                 enabled: enabled,
                 waive_pet_fee: waivePet,
-                priority: 1000,
+                priority: isNaN(priorityVal) ? 1000 : priorityVal,
                 property_prices: propertyPrices
             };
 
@@ -947,9 +950,12 @@ function setupSettingsForm() {
 
 function escapeHtml(str) {
     if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 // Note: escapeHtml is also declared in app.js (loaded before this module);
 // both implementations are identical.
