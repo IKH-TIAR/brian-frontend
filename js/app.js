@@ -104,6 +104,7 @@ let appInitialized = false;
 
 let currentPhone = null;
 let currentConvId = null;
+let currentBookingData = null;
 let ws = null;
 let wsReconnectTimer = null;
 let wsAttempts = 0;
@@ -763,6 +764,7 @@ function renderThread(data) {
     const resDetails = document.getElementById('reservation-details');
     document.getElementById('edit-booking-btn').style.display = 'block';
     const booking = data.booking;
+    currentBookingData = booking || null;
 
     if (booking) {
         const statusColors = {
@@ -1110,20 +1112,32 @@ function setupEventListeners() {
         const name = document.getElementById('thread-name').textContent;
         document.getElementById('booking-name').value = name === 'Unknown Guest' ? '' : name;
 
-        // Fetch current conversation data if available from the DOM elements
-        const rows = document.querySelectorAll('#reservation-details .details-row');
-        let checkin = '', checkout = '', bungalow = '';
-        rows.forEach(row => {
-            const label = row.querySelector('.details-label').textContent;
-            const val = row.querySelectorAll('span')[1].textContent;
-            if (label === 'Bungalow') bungalow = val === 'N/A' ? '' : val;
-            if (label === 'Check-in') checkin = val === 'N/A' ? '' : val;
-            if (label === 'Check-out') checkout = val === 'N/A' ? '' : val;
-        });
+        if (currentBookingData) {
+            const bungalowList = currentBookingData.bungalows && currentBookingData.bungalows.length > 0
+                ? currentBookingData.bungalows.join(', ')
+                : '';
+            document.getElementById('booking-bungalow').value = bungalowList === 'Not assigned' ? '' : bungalowList;
+            document.getElementById('booking-checkin').value = currentBookingData.check_in || '';
+            document.getElementById('booking-checkout').value = currentBookingData.check_out || '';
+        } else {
+            // Fallback safe DOM extraction
+            const rows = document.querySelectorAll('#reservation-details .details-row');
+            let checkin = '', checkout = '', bungalow = '';
+            rows.forEach(row => {
+                const labelEl = row.querySelector('.details-label');
+                if (!labelEl) return;
+                const label = labelEl.textContent.trim();
+                const spans = row.querySelectorAll('span');
+                const val = spans.length > 1 ? spans[1].textContent.trim() : '';
+                if (label === 'Bungalow') bungalow = val === 'N/A' || val === 'Not assigned' ? '' : val;
+                if (label === 'Check-in') checkin = val === 'N/A' ? '' : val;
+                if (label === 'Check-out') checkout = val === 'N/A' ? '' : val;
+            });
 
-        document.getElementById('booking-bungalow').value = bungalow;
-        document.getElementById('booking-checkin').value = checkin;
-        document.getElementById('booking-checkout').value = checkout;
+            document.getElementById('booking-bungalow').value = bungalow;
+            document.getElementById('booking-checkin').value = checkin;
+            document.getElementById('booking-checkout').value = checkout;
+        }
 
         bookingModal.classList.add('active');
     });
