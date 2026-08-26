@@ -1146,10 +1146,13 @@ function setupEventListeners() {
             };
             await window.api.updateBookingDetails(currentConvId, data);
             bookingModal.classList.remove('active');
+            if (window.showToast) window.showToast("Reservation updated successfully", "success");
             loadThread(currentPhone);
+            loadConversations();
         } catch (e) {
             console.error(e);
-            alert("Failed to save booking details");
+            if (window.showToast) window.showToast("Failed to save booking details: " + (e.message || e), "error");
+            else alert("Failed to save booking details");
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = origText;
