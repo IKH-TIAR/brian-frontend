@@ -1190,6 +1190,7 @@ function setupEventListeners() {
         const phone = cmdModal.dataset.phone || currentPhone;
         const paramsContainer = document.getElementById('cmd-params');
         const inputs = paramsContainer ? paramsContainer.querySelectorAll('input, select, textarea') : [];
+        const params = {};
         inputs.forEach(input => {
             params[input.name] = input.value;
         });
