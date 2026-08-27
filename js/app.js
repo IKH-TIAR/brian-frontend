@@ -1218,11 +1218,29 @@ function setupEventListeners() {
             params['amount'] = depVal;
         }
 
+        // Final Payment Received command: Required from frontend
+        if (cmdName === 'final_payment_received') {
+            const rawVal = params['payment_amount'] || params['amount'] || '';
+            const payVal = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
+            if (isNaN(payVal) || payVal <= 0) {
+                showToast("Please enter a valid payment amount.", "error");
+                submitBtn.disabled = false;
+                submitBtn.textContent = origText;
+                return;
+            }
+            params['payment_amount'] = payVal;
+            params['amount'] = payVal;
+        }
+
 
         try {
             if (cmdName === 'deposit_received') {
                 const payCurrency = params['currency'] || 'USD';
                 await window.api.confirmDeposit(phone, params['deposit_amount'], payCurrency);
+            }
+            if (cmdName === 'final_payment_received') {
+                const payCurrency = params['currency'] || 'USD';
+                await window.api.confirmFinalPayment(phone, params['payment_amount'], payCurrency);
             }
             await window.api.executeCommand(cmdName, phone, params);
             cmdModal.classList.remove('active');
@@ -1309,6 +1327,27 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
             ...cmdObj,
             required_params: [
                 { name: 'deposit_amount', label: 'Deposit Amount Paid *', required: true },
+                {
+                    name: 'currency',
+                    label: 'Payment Currency (Colones will be auto-converted to USD)',
+                    type: 'select',
+                    options: [
+                        { value: 'USD', label: 'USD ($)' },
+                        { value: 'CRC', label: 'Costa Rican Colones (CRC / ₡)' }
+                    ],
+                    default: 'USD',
+                    required: true
+                }
+            ]
+        };
+    }
+
+    // Final Payment Received: configure amount and payment currency fields
+    if (cmdObj.command === 'final_payment_received') {
+        cmdObj = {
+            ...cmdObj,
+            required_params: [
+                { name: 'payment_amount', label: 'Payment Amount Received *', required: true },
                 {
                     name: 'currency',
                     label: 'Payment Currency (Colones will be auto-converted to USD)',

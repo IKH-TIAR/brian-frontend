@@ -355,6 +355,17 @@ class ApiClient {
         });
     }
 
+    async confirmFinalPayment(phone, paymentAmount, currency = 'USD') {
+        return this.request('/admin/bookings/confirm-final-payment', {
+            method: 'POST',
+            body: JSON.stringify({
+                phone: phone,
+                payment_amount: paymentAmount,
+                currency: currency
+            })
+        });
+    }
+
     // Template Config API
     async getTemplateConfigs() {
         return this.request('/admin/template-config');
