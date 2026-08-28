@@ -802,11 +802,16 @@ function renderThread(data) {
             if (booking.deposit_amount > 0) {
                 html += `<div class="details-row"><span class="details-label">Deposit Paid</span> <span style="color:#0d9488;">$${booking.deposit_amount.toFixed(2)}</span></div>`;
             }
+            if (booking.final_payment_amount > 0) {
+                html += `<div class="details-row"><span class="details-label">Final Payment</span> <span style="color:#0d9488;font-weight:600;">$${booking.final_payment_amount.toFixed(2)}</span></div>`;
+            }
             if (booking.refundable_deposit > 0) {
                 html += `<div class="details-row"><span class="details-label">Refundable Dep.</span> <span>$${booking.refundable_deposit.toFixed(2)}</span></div>`;
             }
             if (booking.balance_due > 0) {
                 html += `<div class="details-row"><span class="details-label">Balance Due</span> <span style="color:#e53e3e;font-weight:600;">$${booking.balance_due.toFixed(2)}</span></div>`;
+            } else if (booking.total_amount > 0 && (booking.deposit_amount > 0 || booking.final_payment_amount > 0)) {
+                html += `<div class="details-row"><span class="details-label">Balance Due</span> <span style="color:#0d9488;font-weight:600;">$0.00 (Paid in Full)</span></div>`;
             }
             if (booking.payment_due_date) {
                 html += `<div class="details-row"><span class="details-label">Payment Due</span> <span>${booking.payment_due_date}</span></div>`;
@@ -1109,6 +1114,13 @@ function setupEventListeners() {
     const bookingModal = document.getElementById('booking-modal');
     document.getElementById('edit-booking-btn').addEventListener('click', () => {
         if (!currentPhone) return;
+
+        // If an active booking exists in the database, open the full booking detail modal (with all financials, final payment, etc.)
+        if (currentBookingData && currentBookingData.id && typeof window.openBookingDetailModal === 'function') {
+            window.openBookingDetailModal(currentBookingData.id);
+            return;
+        }
+
         const name = document.getElementById('thread-name').textContent;
         document.getElementById('booking-name').value = name === 'Unknown Guest' ? '' : name;
 

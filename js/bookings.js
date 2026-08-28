@@ -28,13 +28,15 @@ function initBookingsModule() {
     function updateBalanceDue() {
         const total = parseFloat(document.getElementById('bd-total-amount')?.value) || 0;
         const deposit = parseFloat(document.getElementById('bd-deposit-amount')?.value) || 0;
+        const finalPay = parseFloat(document.getElementById('bd-final-payment-amount')?.value) || 0;
         const balEl = document.getElementById('bd-balance-due');
         if (balEl) {
-            balEl.value = Math.max(0, total - deposit).toFixed(2);
+            balEl.value = Math.max(0, total - deposit - finalPay).toFixed(2);
         }
     }
     document.getElementById('bd-total-amount')?.addEventListener('input', updateBalanceDue);
     document.getElementById('bd-deposit-amount')?.addEventListener('input', updateBalanceDue);
+    document.getElementById('bd-final-payment-amount')?.addEventListener('input', updateBalanceDue);
     document.getElementById('booking-edit-form')?.addEventListener('submit', handleSaveBooking);
     document.getElementById('delete-booking-btn')?.addEventListener('click', handleDeleteBooking);
 
@@ -233,6 +235,7 @@ function renderBookingDetail() {
     document.getElementById('bd-total-amount').value = b.total_amount || 0;
     document.getElementById('bd-deposit-amount').value = b.deposit_amount || 0;
     document.getElementById('bd-refundable-deposit').value = b.refundable_deposit || 0;
+    document.getElementById('bd-final-payment-amount').value = b.final_payment_amount || 0;
     document.getElementById('bd-balance-due').value = b.balance_due || 0;
     document.getElementById('bd-deposit-due-date').value = b.deposit_due_date || '';
     document.getElementById('bd-payment-due-date').value = b.payment_due_date || '';
@@ -353,6 +356,7 @@ async function handleSaveBooking(e) {
         total_amount: parseFloat(document.getElementById('bd-total-amount').value) || 0,
         deposit_amount: parseFloat(document.getElementById('bd-deposit-amount').value) || 0,
         refundable_deposit: parseFloat(document.getElementById('bd-refundable-deposit').value) || 0,
+        final_payment_amount: parseFloat(document.getElementById('bd-final-payment-amount')?.value) || 0,
         balance_due: parseFloat(document.getElementById('bd-balance-due').value) || 0,
         deposit_due_date: document.getElementById('bd-deposit-due-date').value || null,
         payment_due_date: document.getElementById('bd-payment-due-date').value || null,
@@ -364,6 +368,9 @@ async function handleSaveBooking(e) {
         if (window.showToast) window.showToast("Booking details saved successfully!", "success");
         closeBookingDetailModal();
         await loadBookings();
+        if (typeof window.loadThread === 'function' && window.currentPhone) {
+            window.loadThread(window.currentPhone);
+        }
     } catch (err) {
         if (window.showToast) window.showToast("Failed to save booking: " + err.message, "error");
         else alert("Failed to save booking: " + err.message);
