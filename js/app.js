@@ -535,18 +535,26 @@ function renderConversationList(convs, append = false) {
 async function loadThread(phone) {
     currentPhone = phone;
 
+    // Reset any inline overrides
+    const threadHeader = document.querySelector('.thread-header');
+    if (threadHeader) threadHeader.style.display = '';
+    const replyForm = document.getElementById('reply-form');
+    if (replyForm) replyForm.style.display = '';
+
     // Update UI active states
     document.querySelectorAll('.conv-item').forEach(el => {
         el.classList.toggle('active', el.dataset.phone === phone);
     });
 
-    document.getElementById('empty-state').classList.remove('active');
-    document.getElementById('thread-view').classList.add('active');
+    document.getElementById('empty-state')?.classList.remove('active');
+    document.getElementById('thread-view')?.classList.add('active');
 
     // Switch to main view on mobile
     const appContainer = document.getElementById('app-container');
-    appContainer.classList.remove('view-sidebar', 'view-info');
-    appContainer.classList.add('view-main');
+    if (appContainer) {
+        appContainer.classList.remove('view-sidebar', 'view-info');
+        appContainer.classList.add('view-main');
+    }
 
     // Show loading spinner while the thread fetches
     document.getElementById('message-list').innerHTML = '<div class="list-loading"></div>';
@@ -832,6 +840,10 @@ function renderThread(data) {
     } else {
         resDetails.innerHTML = '<p>No active booking.</p>';
     }
+
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
 
 async function loadCommands() {
@@ -1094,20 +1106,69 @@ function setupEventListeners() {
     // Edit Name Modal
     const nameModal = document.getElementById('name-modal');
     document.getElementById('edit-name-btn').addEventListener('click', () => {
-        document.getElementById('edit-name-input').value = document.getElementById('thread-name').textContent === 'Unknown Guest' ? '' : document.getElementById('thread-name').textContent;
-        document.getElementById('edit-returning-checkbox').checked = !document.getElementById('badge-returning').classList.contains('hidden');
+        const editInput = document.getElementById('edit-name-input');
+        const returningChk = document.getElementById('edit-returning-checkbox');
+        const delBtn = document.getElementById('delete-contact-btn');
+        const saveBtn = document.getElementById('save-name-btn');
+        const cancelBtn = document.getElementById('cancel-name-btn');
+
+        if (editInput) {
+            editInput.disabled = false;
+            editInput.value = document.getElementById('thread-name').textContent === 'Unknown Guest' ? '' : document.getElementById('thread-name').textContent;
+        }
+        if (returningChk) {
+            returningChk.disabled = false;
+            returningChk.checked = !document.getElementById('badge-returning').classList.contains('hidden');
+        }
+        if (delBtn) delBtn.disabled = false;
+        if (saveBtn) saveBtn.disabled = false;
+        if (cancelBtn) cancelBtn.disabled = false;
+
         nameModal.classList.add('active');
     });
-    document.getElementById('cancel-name-btn').addEventListener('click', () => nameModal.classList.remove('active'));
+
+    document.getElementById('cancel-name-btn').addEventListener('click', () => {
+        const delBtn = document.getElementById('delete-contact-btn');
+        const saveBtn = document.getElementById('save-name-btn');
+        // Do not cancel if an action is currently in progress
+        if ((delBtn && delBtn.disabled) || (saveBtn && saveBtn.disabled)) return;
+        nameModal.classList.remove('active');
+    });
+
     document.getElementById('save-name-btn').addEventListener('click', async () => {
-        const name = document.getElementById('edit-name-input').value;
-        const isReturning = document.getElementById('edit-returning-checkbox').checked;
+        const delBtn = document.getElementById('delete-contact-btn');
+        const saveBtn = document.getElementById('save-name-btn');
+        const cancelBtn = document.getElementById('cancel-name-btn');
+        const nameInput = document.getElementById('edit-name-input');
+        const returningChk = document.getElementById('edit-returning-checkbox');
+
+        const name = nameInput.value;
+        const isReturning = returningChk.checked;
+        const origText = saveBtn.textContent;
+
+        saveBtn.disabled = true;
+        if (delBtn) delBtn.disabled = true;
+        if (cancelBtn) cancelBtn.disabled = true;
+        if (nameInput) nameInput.disabled = true;
+        if (returningChk) returningChk.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
         try {
             await window.api.updateContact(currentPhone, { name, is_returning: isReturning });
             nameModal.classList.remove('active');
             loadThread(currentPhone);
             loadConversations();
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            if (window.showToast) window.showToast("Failed to update contact: " + (e.message || e), "error");
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = origText;
+            if (delBtn) delBtn.disabled = false;
+            if (cancelBtn) cancelBtn.disabled = false;
+            if (nameInput) nameInput.disabled = false;
+            if (returningChk) returningChk.disabled = false;
+        }
     });
 
     document.getElementById('delete-contact-btn')?.addEventListener('click', async () => {
@@ -1117,8 +1178,17 @@ function setupEventListeners() {
         if (!confirmed) return;
 
         const delBtn = document.getElementById('delete-contact-btn');
+        const saveBtn = document.getElementById('save-name-btn');
+        const cancelBtn = document.getElementById('cancel-name-btn');
+        const nameInput = document.getElementById('edit-name-input');
+        const returningChk = document.getElementById('edit-returning-checkbox');
+
         const origText = delBtn.innerHTML;
         delBtn.disabled = true;
+        if (saveBtn) saveBtn.disabled = true;
+        if (cancelBtn) cancelBtn.disabled = true;
+        if (nameInput) nameInput.disabled = true;
+        if (returningChk) returningChk.disabled = true;
         delBtn.innerHTML = 'Deleting...';
 
         try {
@@ -1131,17 +1201,29 @@ function setupEventListeners() {
             currentConvId = null;
             currentBookingData = null;
 
-            // Clear chat window UI
-            const messagesContainer = document.getElementById('messages-container');
-            if (messagesContainer) {
-                messagesContainer.innerHTML = '<div class="no-selection" style="text-align:center;padding:3rem;color:var(--text-secondary);"><p>Select a conversation to start messaging</p></div>';
-            }
-            const threadHeader = document.querySelector('.thread-header');
-            if (threadHeader) threadHeader.style.display = 'none';
-            const replyForm = document.getElementById('reply-form');
-            if (replyForm) replyForm.style.display = 'none';
+            // Reset active conversation item selection
+            document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+
+            // Switch to empty state
+            const emptyState = document.getElementById('empty-state');
+            if (emptyState) emptyState.classList.add('active');
+            const threadView = document.getElementById('thread-view');
+            if (threadView) threadView.classList.remove('active');
+
+            // Reset reservation details & command buttons
             const resDetails = document.getElementById('reservation-details');
             if (resDetails) resDetails.innerHTML = '<p>No active booking.</p>';
+            const quickCatchupBtn = document.getElementById('quick-catchup-btn');
+            if (quickCatchupBtn) quickCatchupBtn.style.display = 'none';
+            const clearHistoryBtn = document.getElementById('clear-history-btn');
+            if (clearHistoryBtn) clearHistoryBtn.style.display = 'none';
+
+            // Switch mobile container view back to sidebar
+            const appContainer = document.getElementById('app-container');
+            if (appContainer) {
+                appContainer.classList.remove('view-main', 'view-info');
+                appContainer.classList.add('view-sidebar');
+            }
 
             // Reload conversations list
             await loadConversations();
@@ -1152,6 +1234,10 @@ function setupEventListeners() {
         } finally {
             delBtn.disabled = false;
             delBtn.innerHTML = origText;
+            if (saveBtn) saveBtn.disabled = false;
+            if (cancelBtn) cancelBtn.disabled = false;
+            if (nameInput) nameInput.disabled = false;
+            if (returningChk) returningChk.disabled = false;
         }
     });
 
