@@ -191,9 +191,15 @@
             <label class="checkbox-label">
                 <input type="checkbox" id="edit-returning-checkbox"> Returning Guest
             </label>
-            <div class="modal-actions">
-                <button id="cancel-name-btn" class="btn-secondary">Cancel</button>
-                <button id="save-name-btn" class="btn-primary">Save</button>
+            <div class="modal-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <button type="button" id="delete-contact-btn"
+                    style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; display: inline-flex; align-items: center; gap: 6px; padding: 0.5rem 0.85rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 500;">
+                    <i data-lucide="user-x" style="width: 14px; height: 14px;"></i> Delete Contact
+                </button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" id="cancel-name-btn" class="btn-secondary">Cancel</button>
+                    <button type="button" id="save-name-btn" class="btn-primary">Save</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1090,8 +1096,8 @@
     <!-- Toast Notifications Container -->
     <div id="toast-container"></div>
 
-    <script src="js/api.js?v=13"></script>
-    <script src="js/app.js?v=27"></script>
+    <script src="js/api.js?v=14"></script>
+    <script src="js/app.js?v=28"></script>
     <script src="js/bookings.js?v=12"></script>
 </body>
 

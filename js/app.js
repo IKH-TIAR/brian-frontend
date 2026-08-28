@@ -1110,6 +1110,51 @@ function setupEventListeners() {
         } catch (e) { console.error(e); }
     });
 
+    document.getElementById('delete-contact-btn')?.addEventListener('click', async () => {
+        if (!currentPhone) return;
+        const displayName = document.getElementById('thread-name')?.textContent || currentPhone;
+        const confirmed = confirm(`Are you sure you want to permanently delete '${displayName}' (${currentPhone})?\n\nThis will delete all their messages, bookings, and uploaded photos. This action cannot be undone.`);
+        if (!confirmed) return;
+
+        const delBtn = document.getElementById('delete-contact-btn');
+        const origText = delBtn.innerHTML;
+        delBtn.disabled = true;
+        delBtn.innerHTML = 'Deleting...';
+
+        try {
+            await window.api.deleteContact(currentPhone);
+            nameModal.classList.remove('active');
+            if (window.showToast) window.showToast(`Contact '${displayName}' deleted successfully`, "success");
+
+            // Reset selection state
+            currentPhone = null;
+            currentConvId = null;
+            currentBookingData = null;
+
+            // Clear chat window UI
+            const messagesContainer = document.getElementById('messages-container');
+            if (messagesContainer) {
+                messagesContainer.innerHTML = '<div class="no-selection" style="text-align:center;padding:3rem;color:var(--text-secondary);"><p>Select a conversation to start messaging</p></div>';
+            }
+            const threadHeader = document.querySelector('.thread-header');
+            if (threadHeader) threadHeader.style.display = 'none';
+            const replyForm = document.getElementById('reply-form');
+            if (replyForm) replyForm.style.display = 'none';
+            const resDetails = document.getElementById('reservation-details');
+            if (resDetails) resDetails.innerHTML = '<p>No active booking.</p>';
+
+            // Reload conversations list
+            await loadConversations();
+        } catch (err) {
+            console.error("Failed to delete contact:", err);
+            if (window.showToast) window.showToast("Failed to delete contact: " + (err.message || err), "error");
+            else alert("Failed to delete contact: " + (err.message || err));
+        } finally {
+            delBtn.disabled = false;
+            delBtn.innerHTML = origText;
+        }
+    });
+
     // Edit Booking Modal
     const bookingModal = document.getElementById('booking-modal');
     document.getElementById('edit-booking-btn').addEventListener('click', () => {

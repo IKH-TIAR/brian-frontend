@@ -136,6 +136,12 @@ class ApiClient {
         });
     }
 
+    async deleteContact(phone) {
+        return this.request(`/contacts/${encodeURIComponent(phone)}`, {
+            method: 'DELETE'
+        });
+    }
+
     // Bungalow Codes
     async getBungalows() {
         return this.request('/admin/bungalows');
