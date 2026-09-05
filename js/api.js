@@ -1,16 +1,24 @@
+const ENV = window.__ENV || window.ENV || {};
+
 function getApiBaseUrl() {
+    if (ENV.API_BASE_URL) {
+        return ENV.API_BASE_URL.replace(/\/+$/, '');
+    }
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return `${window.location.origin}/api`;
     }
-    return 'https://raphael-precipiced-lashunda.ngrok-free.dev/api';
+    return 'https://api.hermosabungalows.cloud/api';
 }
 
 function getWsBaseUrl() {
+    if (ENV.WS_BASE_URL) {
+        return ENV.WS_BASE_URL.replace(/\/+$/, '');
+    }
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         const scheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         return `${scheme}//${window.location.host}/ws`;
     }
-    return 'wss://raphael-precipiced-lashunda.ngrok-free.dev/ws';
+    return 'wss://api.hermosabungalows.cloud/ws';
 }
 
 const API_BASE = getApiBaseUrl();
@@ -25,8 +33,7 @@ class ApiClient {
     async request(endpoint, options = {}) {
         const headers = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.password}`, // Basic auth implementation for now
-            'ngrok-skip-browser-warning': '69420'
+            'Authorization': `Bearer ${this.password}` // Basic auth implementation for now
         };
 
         const config = {

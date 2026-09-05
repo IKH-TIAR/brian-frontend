@@ -362,7 +362,7 @@ setInterval(() => {
     }
 }, 30000);
 
-// Fallback Poller: Only runs when WebSocket is disconnected (e.g. ngrok blocks WS).
+// Fallback Poller: Only runs when WebSocket is disconnected.
 // Polls every 8s using the lightweight conversation-list endpoint, not full thread data.
 let lastPolledMsgId = null;
 let pollInFlight = false;
@@ -670,8 +670,7 @@ function buildMessageEl(msg) {
         const pwd = window.api ? window.api.password : '';
         const params = new URLSearchParams();
         if (pwd) params.set('token', pwd);
-        params.set('ngrok-skip-browser-warning', '69420');
-        const queryStr = `?${params.toString()}`;
+        const queryStr = params.toString() ? `?${params.toString()}` : '';
 
         const baseUrl = API_BASE.replace(/\/api$/, '');
         const imgUrl = `${baseUrl}${msg.media_url}${queryStr}`;
