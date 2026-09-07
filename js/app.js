@@ -1614,7 +1614,9 @@ function appendMessageToThread(data) {
         content: data.content,
         created_at: data.created_at,
         escalated: data.escalated,
-        escalation_reason: data.escalation_reason
+        escalation_reason: data.escalation_reason,
+        media_url: data.media_url,
+        caption: data.caption
     }));
 
     if (wasNearBottom) {
