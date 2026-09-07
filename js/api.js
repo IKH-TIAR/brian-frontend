@@ -33,8 +33,7 @@ class ApiClient {
     async request(endpoint, options = {}) {
         const headers = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.password}`,
-            'ngrok-skip-browser-warning': '69420'
+            'Authorization': `Bearer ${this.password}` // Basic auth implementation for now
         };
 
         const config = {

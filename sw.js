@@ -1,12 +1,12 @@
-const CACHE_NAME = 'hbb-static-v5';
+const CACHE_NAME = 'hbb-static-v6';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './css/styles.css?v=6',
-  './js/env.js?v=2',
-  './js/api.js?v=16',
-  './js/app.js?v=32',
-  './js/bookings.js?v=12',
+  './js/env.js?v=3',
+  './js/api.js?v=17',
+  './js/app.js?v=33',
+  './js/bookings.js?v=13',
   './js/pricing.js?v=9',
   './manifest.json',
 ];
@@ -14,7 +14,7 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).catch(() => {})
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).catch(() => { })
   );
 });
 
