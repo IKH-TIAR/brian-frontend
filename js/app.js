@@ -670,7 +670,8 @@ function buildMessageEl(msg) {
         const pwd = window.api ? window.api.password : '';
         const params = new URLSearchParams();
         if (pwd) params.set('token', pwd);
-        const queryStr = params.toString() ? `?${params.toString()}` : '';
+        params.set('ngrok-skip-browser-warning', '69420');
+        const queryStr = `?${params.toString()}`;
 
         const baseUrl = API_BASE.replace(/\/api$/, '');
         const imgUrl = `${baseUrl}${msg.media_url}${queryStr}`;

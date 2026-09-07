@@ -1,11 +1,11 @@
-const CACHE_NAME = 'hbb-static-v4';
+const CACHE_NAME = 'hbb-static-v5';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './css/styles.css?v=6',
-  './js/env.js?v=1',
-  './js/api.js?v=15',
-  './js/app.js?v=31',
+  './js/env.js?v=2',
+  './js/api.js?v=16',
+  './js/app.js?v=32',
   './js/bookings.js?v=12',
   './js/pricing.js?v=9',
   './manifest.json',
