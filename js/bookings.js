@@ -622,6 +622,28 @@ async function executeCommandDirectly(commandCode, phone, amount = '') {
     }
 }
 
+// Ensure sendTemplate is available even if api.js was served from older browser cache
+if (window.ApiClient && !window.ApiClient.prototype.sendTemplate) {
+    window.ApiClient.prototype.sendTemplate = async function(bookingId, templateKey, bookingUnitId = null) {
+        const payload = { template_key: templateKey };
+        if (bookingUnitId) payload.booking_unit_id = bookingUnitId;
+        return this.request(`/admin/bookings/${encodeURIComponent(bookingId)}/send-template`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    };
+}
+if (window.api && typeof window.api.sendTemplate !== 'function') {
+    window.api.sendTemplate = async function(bookingId, templateKey, bookingUnitId = null) {
+        const payload = { template_key: templateKey };
+        if (bookingUnitId) payload.booking_unit_id = bookingUnitId;
+        return this.request(`/admin/bookings/${encodeURIComponent(bookingId)}/send-template`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    };
+}
+
 /**
  * Send a WhatsApp template via the new n8n Template Dispatcher pipeline.
  * Backend assembles all 20 fields, POSTs to n8n webhook, which calls the sub-workflow.
@@ -668,7 +690,19 @@ async function sendBookingTemplate(bookingId, templateKey, bookingUnitId = '', t
     }
 
     try {
-        const result = await window.api.sendTemplate(bookingId, templateKey, bookingUnitId || null);
+        let result;
+        if (window.api && typeof window.api.sendTemplate === 'function') {
+            result = await window.api.sendTemplate(bookingId, templateKey, bookingUnitId || null);
+        } else if (window.api && typeof window.api.request === 'function') {
+            const payload = { template_key: templateKey };
+            if (bookingUnitId) payload.booking_unit_id = bookingUnitId;
+            result = await window.api.request(`/admin/bookings/${encodeURIComponent(bookingId)}/send-template`, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+        } else {
+            throw new Error("API client not available");
+        }
 
         if (result.duplicate) {
             if (window.showToast) window.showToast(`"${friendlyName}" was already sent for this booking (duplicate prevented).`, "warning");
