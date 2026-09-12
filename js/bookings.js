@@ -17,8 +17,11 @@ function initBookingsModule() {
     document.getElementById('close-booking-detail-btn')?.addEventListener('click', closeBookingDetailModal);
     document.getElementById('close-template-config-btn')?.addEventListener('click', closeTemplateConfigModal);
     document.getElementById('close-template-sends-btn')?.addEventListener('click', closeTemplateSendsModal);
+    document.getElementById('close-create-booking-btn')?.addEventListener('click', closeCreateBookingModal);
+    document.getElementById('cancel-create-booking-btn')?.addEventListener('click', closeCreateBookingModal);
 
-    // Bookings Filters
+    // Bookings Filters & Actions
+    document.getElementById('open-create-booking-btn')?.addEventListener('click', openCreateBookingModal);
     document.getElementById('bookings-status-filter')?.addEventListener('change', loadBookings);
     document.getElementById('bookings-search-input')?.addEventListener('input', debounce(loadBookings, 300));
     document.getElementById('bookings-date-from')?.addEventListener('change', loadBookings);
@@ -39,6 +42,21 @@ function initBookingsModule() {
     document.getElementById('bd-final-payment-amount')?.addEventListener('input', updateBalanceDue);
     document.getElementById('booking-edit-form')?.addEventListener('submit', handleSaveBooking);
     document.getElementById('delete-booking-btn')?.addEventListener('click', handleDeleteBooking);
+
+    // Create Booking Form Balance Auto-Calculation & Submit
+    function updateCreateBalanceDue() {
+        const total = parseFloat(document.getElementById('cb-total-amount')?.value) || 0;
+        const deposit = parseFloat(document.getElementById('cb-deposit-amount')?.value) || 0;
+        const finalPay = parseFloat(document.getElementById('cb-final-payment-amount')?.value) || 0;
+        const balEl = document.getElementById('cb-balance-due');
+        if (balEl) {
+            balEl.value = Math.max(0, total - deposit - finalPay).toFixed(2);
+        }
+    }
+    document.getElementById('cb-total-amount')?.addEventListener('input', updateCreateBalanceDue);
+    document.getElementById('cb-deposit-amount')?.addEventListener('input', updateCreateBalanceDue);
+    document.getElementById('cb-final-payment-amount')?.addEventListener('input', updateCreateBalanceDue);
+    document.getElementById('create-booking-form')?.addEventListener('submit', handleCreateBooking);
 
     // Template Config Forms
     document.getElementById('tc-edit-form')?.addEventListener('submit', handleSaveTemplateConfig);
@@ -68,6 +86,9 @@ if (document.readyState === 'loading') {
 }
 
 window.openBookingsModal = openBookingsModal;
+window.openCreateBookingModal = openCreateBookingModal;
+window.openCreateBookingModalForContact = openCreateBookingModal;
+window.closeCreateBookingModal = closeCreateBookingModal;
 window.openBookingDetailModal = openBookingDetailModal;
 window.openTemplateConfigModal = openTemplateConfigModal;
 window.openTemplateSendsModal = openTemplateSendsModal;
@@ -97,6 +118,174 @@ async function openBookingsModal() {
 
 function closeBookingsModal() {
     document.getElementById('bookings-modal')?.classList.remove('active');
+}
+
+async function openCreateBookingModal(contactContext = null) {
+    const modal = document.getElementById('create-booking-modal');
+    if (!modal) return;
+
+    // Use passed contactContext or fallback to active conversation thread context
+    const ctx = contactContext || (window.currentContactData ? {
+        contact: window.currentContactData,
+        conversation: { id: window.currentConvId }
+    } : null);
+
+    if (!ctx || !ctx.contact || !ctx.contact.phone) {
+        const msg = "Please select a guest conversation from the left sidebar to add a booking.";
+        if (window.showToast) window.showToast(msg, "warning");
+        else alert(msg);
+        return;
+    }
+
+    document.getElementById('create-booking-form')?.reset();
+    document.getElementById('cb-checkout-time').value = '11:00';
+    document.getElementById('cb-language').value = 'english';
+    document.getElementById('cb-source').value = 'direct';
+    document.getElementById('cb-status').value = 'pending';
+    document.getElementById('cb-total-amount').value = '0.00';
+    document.getElementById('cb-deposit-amount').value = '0.00';
+    document.getElementById('cb-refundable-deposit').value = '0.00';
+    document.getElementById('cb-final-payment-amount').value = '0.00';
+    document.getElementById('cb-balance-due').value = '0.00';
+
+    // Populate contact fields
+    const contactIdEl = document.getElementById('cb-contact-id');
+    const convIdEl = document.getElementById('cb-conversation-id');
+    const phoneEl = document.getElementById('cb-phone');
+    const nameEl = document.getElementById('cb-guest-name');
+    const modalTitle = document.getElementById('cb-modal-title');
+
+    if (contactIdEl) contactIdEl.value = ctx.contact.id || '';
+    if (convIdEl) convIdEl.value = ctx.conversation?.id || '';
+    if (phoneEl) {
+        phoneEl.value = ctx.contact.phone || '';
+        phoneEl.readOnly = true;
+    }
+    if (nameEl) {
+        const rawName = ctx.contact.name || '';
+        nameEl.value = rawName.toLowerCase() === 'unknown guest' ? '' : rawName;
+    }
+    if (modalTitle) {
+        modalTitle.textContent = `Create Booking for ${ctx.contact.name || ctx.contact.phone}`;
+    }
+
+    // Populate Bungalow selector dropdown
+    try {
+        const properties = await window.api.getPricingProperties();
+        const propSelect = document.getElementById('cb-property');
+        if (propSelect) {
+            propSelect.innerHTML = '<option value="">-- Select Bungalow --</option>';
+            (properties || []).forEach(p => {
+                if (p.active !== false) {
+                    propSelect.innerHTML += `<option value="${p.id}" data-name="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`;
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Failed to load properties for create booking:", e);
+    }
+
+    modal.classList.add('active');
+    if (window.lucide) lucide.createIcons({}, modal);
+}
+
+function closeCreateBookingModal() {
+    document.getElementById('create-booking-modal')?.classList.remove('active');
+}
+
+async function handleCreateBooking(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('save-create-booking-btn');
+    const cancelBtn = document.getElementById('cancel-create-booking-btn');
+    if (submitBtn.disabled) return;
+    const origHtml = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    if (cancelBtn) cancelBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="btn-spinner"></span> Creating...';
+
+    const contactId = document.getElementById('cb-contact-id')?.value || null;
+    const convId = document.getElementById('cb-conversation-id')?.value || null;
+    const phone = document.getElementById('cb-phone').value.trim();
+    const guestName = document.getElementById('cb-guest-name').value.trim();
+    const checkIn = document.getElementById('cb-check-in').value;
+    const checkOut = document.getElementById('cb-check-out').value;
+    const checkoutTime = document.getElementById('cb-checkout-time').value || '11:00:00';
+    const guestCount = parseInt(document.getElementById('cb-guest-count').value, 10) || 1;
+    const hasPets = document.getElementById('cb-has-pets').checked;
+    const language = document.getElementById('cb-language').value || 'english';
+    const source = document.getElementById('cb-source').value || 'direct';
+    const status = document.getElementById('cb-status').value || 'pending';
+    const ref = document.getElementById('cb-ref').value.trim() || null;
+    const total = parseFloat(document.getElementById('cb-total-amount').value) || 0;
+    const deposit = parseFloat(document.getElementById('cb-deposit-amount').value) || 0;
+    const refundable = parseFloat(document.getElementById('cb-refundable-deposit').value) || 0;
+    const finalPay = parseFloat(document.getElementById('cb-final-payment-amount').value) || 0;
+    const balance = parseFloat(document.getElementById('cb-balance-due').value) || 0;
+    const depositDue = document.getElementById('cb-deposit-due-date').value || null;
+    const paymentDue = document.getElementById('cb-payment-due-date').value || null;
+    const notes = document.getElementById('cb-notes').value.trim() || null;
+
+    const propSelect = document.getElementById('cb-property');
+    const selectedPropId = propSelect?.value;
+    const selectedPropName = propSelect?.selectedOptions[0]?.dataset.name || propSelect?.selectedOptions[0]?.text;
+
+    const units = [];
+    if (selectedPropId) {
+        units.push({
+            property_id: selectedPropId,
+            unit_name_snapshot: selectedPropName !== '-- Select Bungalow --' ? selectedPropName : 'Unit',
+            accommodation_amount: total,
+            cleaning_fee: 0,
+            pet_fee: 0,
+            discount_amount: 0,
+            unit_total: total
+        });
+    }
+
+    const payload = {
+        contact_id: contactId,
+        conversation_id: convId,
+        phone: phone,
+        guest_name: guestName,
+        guest_first_name: guestName.split(' ')[0],
+        check_in: checkIn,
+        check_out: checkOut,
+        checkout_time: checkoutTime.length === 5 ? `${checkoutTime}:00` : checkoutTime,
+        guest_count: guestCount,
+        has_pets: hasPets,
+        language_tag: language,
+        currency: 'USD',
+        source: source,
+        status: status,
+        reservation_reference: ref,
+        total_amount: total,
+        deposit_amount: deposit,
+        refundable_deposit: refundable,
+        final_payment_amount: finalPay,
+        balance_due: balance,
+        deposit_due_date: depositDue,
+        payment_due_date: paymentDue,
+        internal_notes: notes,
+        units: units
+    };
+
+    try {
+        const created = await window.api.createBooking(payload);
+        if (window.showToast) window.showToast("Booking created successfully!", "success");
+        closeCreateBookingModal();
+        await loadBookings();
+        if (typeof window.loadThread === 'function' && window.currentPhone) {
+            window.loadThread(window.currentPhone);
+        }
+    } catch (err) {
+        console.error("Failed to create booking:", err);
+        if (window.showToast) window.showToast("Failed to create booking: " + (err.message || err), "error");
+        else alert("Failed to create booking: " + (err.message || err));
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origHtml;
+        if (cancelBtn) cancelBtn.disabled = false;
+    }
 }
 
 async function loadBookings() {
@@ -271,19 +460,40 @@ function renderBookingDetail() {
     // Command Action Buttons (surface 4 commands with pre-filled phone)
     const cmdContainer = document.getElementById('bd-commands-container');
     const guestPhone = b.contact?.phone || '';
+    const bookingId = b.id;
+    const firstUnitId = (b.units && b.units.length > 0) ? b.units[0].id : '';
     cmdContainer.innerHTML = `
-        <button class="btn-sm btn-secondary" onclick="launchBookingCommand('ontime_checkout', '${guestPhone}')">
-            <i data-lucide="clock" style="width:13px;height:13px;"></i> On-time Checkout
-        </button>
-        <button class="btn-sm btn-secondary" onclick="launchBookingCommand('deposit_reminder', '${guestPhone}')">
-            <i data-lucide="dollar-sign" style="width:13px;height:13px;"></i> Deposit Reminder
-        </button>
-        <button class="btn-sm btn-secondary" onclick="launchBookingCommand('balance_due', '${guestPhone}', '${b.balance_due ? '$' + b.balance_due.toFixed(2) : '$0.00'}')">
-            <i data-lucide="credit-card" style="width:13px;height:13px;"></i> Balance Due
-        </button>
-        <button class="btn-sm btn-secondary" onclick="launchBookingCommand('rainy_season_parking', '${guestPhone}')">
-            <i data-lucide="cloud-rain" style="width:13px;height:13px;"></i> Rainy Season Parking
-        </button>
+        <div style="width:100%; margin-bottom:0.5rem;">
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.5px;">Automated Templates (via n8n)</div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button class="btn-sm btn-secondary" style="border-color:var(--accent-teal);" onclick="sendBookingTemplate('${bookingId}', 'pre_arrival', '${firstUnitId}')">
+                    <i data-lucide="door-open" style="width:13px;height:13px;"></i> Pre-Arrival
+                </button>
+                <button class="btn-sm btn-secondary" style="border-color:var(--accent-teal);" onclick="sendBookingTemplate('${bookingId}', 'pre_checkout')">
+                    <i data-lucide="log-out" style="width:13px;height:13px;"></i> Pre-Checkout
+                </button>
+                <button class="btn-sm btn-secondary" style="border-color:var(--accent-teal);" onclick="sendBookingTemplate('${bookingId}', 'post_checkout_thankyou')">
+                    <i data-lucide="heart" style="width:13px;height:13px;"></i> Post-Checkout Thank You
+                </button>
+            </div>
+        </div>
+        <div style="width:100%;">
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.5px;">Quick Commands (via admin webhook)</div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button class="btn-sm btn-secondary" onclick="launchBookingCommand('ontime_checkout', '${guestPhone}')">
+                    <i data-lucide="clock" style="width:13px;height:13px;"></i> On-time Checkout
+                </button>
+                <button class="btn-sm btn-secondary" onclick="launchBookingCommand('deposit_reminder', '${guestPhone}')">
+                    <i data-lucide="dollar-sign" style="width:13px;height:13px;"></i> Deposit Reminder
+                </button>
+                <button class="btn-sm btn-secondary" onclick="launchBookingCommand('balance_due', '${guestPhone}', '${b.balance_due ? '$' + b.balance_due.toFixed(2) : '$0.00'}')">
+                    <i data-lucide="credit-card" style="width:13px;height:13px;"></i> Balance Due
+                </button>
+                <button class="btn-sm btn-secondary" onclick="launchBookingCommand('rainy_season_parking', '${guestPhone}')">
+                    <i data-lucide="cloud-rain" style="width:13px;height:13px;"></i> Rainy Season Parking
+                </button>
+            </div>
+        </div>
     `;
 
     if (window.lucide) lucide.createIcons({}, document.getElementById('booking-detail-modal'));
@@ -411,6 +621,85 @@ async function executeCommandDirectly(commandCode, phone, amount = '') {
         else alert("Command execution failed: " + err.message);
     }
 }
+
+/**
+ * Send a WhatsApp template via the new n8n Template Dispatcher pipeline.
+ * Backend assembles all 20 fields, POSTs to n8n webhook, which calls the sub-workflow.
+ */
+async function sendBookingTemplate(bookingId, templateKey, bookingUnitId = '', triggerBtn = null) {
+    if (!bookingId) {
+        if (window.showToast) window.showToast("No booking selected.", "warning");
+        return;
+    }
+
+    const friendlyNames = {
+        pre_arrival: 'Pre-Arrival Check-in Details',
+        pre_checkout: 'Pre-Checkout Reminder',
+        post_checkout_thankyou: 'Post-Checkout Thank You'
+    };
+    const friendlyName = friendlyNames[templateKey] || templateKey;
+
+    // Confirmation dialog
+    const confirmed = await window.showConfirmModal({
+        title: `Send ${friendlyName}`,
+        message: `Are you sure you want to send the "${friendlyName}" WhatsApp template to this guest?\n\nThis will send the template message immediately via WhatsApp. Duplicate sends are automatically prevented.`,
+        confirmText: 'Send Template',
+        cancelText: 'Cancel',
+        isDanger: false,
+        icon: '📨'
+    });
+
+    if (!confirmed) return;
+
+    // Find and disable the clicked button
+    let clickedBtn = triggerBtn || null;
+    if (!clickedBtn) {
+        const candidateBtns = document.querySelectorAll('#bd-commands-container button, #reservation-details button, #commands-container button');
+        candidateBtns.forEach(btn => {
+            if (btn.textContent.toLowerCase().includes(friendlyName.split(' ')[0].toLowerCase())) {
+                clickedBtn = btn;
+            }
+        });
+    }
+    const origHtml = clickedBtn ? clickedBtn.innerHTML : null;
+    if (clickedBtn) {
+        clickedBtn.disabled = true;
+        clickedBtn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite;">⏳</span> Sending...';
+    }
+
+    try {
+        const result = await window.api.sendTemplate(bookingId, templateKey, bookingUnitId || null);
+
+        if (result.duplicate) {
+            if (window.showToast) window.showToast(`"${friendlyName}" was already sent for this booking (duplicate prevented).`, "warning");
+        } else {
+            if (window.showToast) window.showToast(`"${friendlyName}" sent successfully! 🎉`, "success");
+        }
+
+        // Refresh thread if viewing this conversation
+        if (typeof window.loadThread === 'function' && window.currentPhone) {
+            window.loadThread(window.currentPhone);
+        }
+    } catch (err) {
+        const errMsg = err.message || String(err);
+        if (window.showToast) window.showToast(`Failed to send "${friendlyName}": ${errMsg}`, "error");
+        else alert(`Failed to send template: ${errMsg}`);
+    } finally {
+        // Re-enable button
+        if (clickedBtn) {
+            clickedBtn.disabled = false;
+            if (origHtml) {
+                clickedBtn.innerHTML = origHtml;
+            } else {
+                const iconMap = { pre_arrival: 'door-open', pre_checkout: 'log-out', post_checkout_thankyou: 'heart' };
+                const icon = iconMap[templateKey] || 'send';
+                clickedBtn.innerHTML = `<i data-lucide="${icon}" style="width:13px;height:13px;"></i> ${friendlyName.replace('Check-in Details', '').replace('Reminder', '').replace('Thank You', 'Thank You').trim()}`;
+            }
+            if (window.lucide) lucide.createIcons({}, clickedBtn);
+        }
+    }
+}
+window.sendBookingTemplate = sendBookingTemplate;
 
 function togglePricingSnapshot() {
     const el = document.getElementById('bd-pricing-snapshot-json');

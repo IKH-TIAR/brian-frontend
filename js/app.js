@@ -105,6 +105,11 @@ let appInitialized = false;
 let currentPhone = null;
 let currentConvId = null;
 let currentBookingData = null;
+let currentContactData = null;
+window.currentPhone = null;
+window.currentConvId = null;
+window.currentContactData = null;
+window.currentBookingData = null;
 let ws = null;
 let wsReconnectTimer = null;
 let wsAttempts = 0;
@@ -562,6 +567,10 @@ async function loadThread(phone) {
     try {
         const data = await window.api.getConversationThread(phone);
         currentConvId = data.conversation.id;
+        currentContactData = data.contact;
+        window.currentConvId = currentConvId;
+        window.currentContactData = currentContactData;
+        window.currentPhone = phone;
         renderThread(data);
 
         // Instantly clear the unread badge on this sidebar item locally
@@ -771,11 +780,17 @@ function renderThread(data) {
 
     // Reservation details — prefer real booking data over legacy conversation fields
     const resDetails = document.getElementById('reservation-details');
-    document.getElementById('edit-booking-btn').style.display = 'block';
+    const editBookingBtn = document.getElementById('edit-booking-btn');
+    if (editBookingBtn) editBookingBtn.style.display = 'block';
     const booking = data.booking;
     currentBookingData = booking || null;
+    window.currentBookingData = currentBookingData;
 
     if (booking) {
+        if (editBookingBtn) {
+            editBookingBtn.title = "Edit Booking";
+            editBookingBtn.innerHTML = '<i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>';
+        }
         const statusColors = {
             confirmed: '#0d9488',
             checked_in: '#2563eb',
@@ -830,16 +845,50 @@ function renderThread(data) {
             }
         }
 
-        resDetails.innerHTML = html;
-    } else if (conversation.bungalow) {
-        // Fallback to legacy conversation fields
-        resDetails.innerHTML = `
-            <div class="details-row"><span class="details-label">Bungalow</span> <span>${conversation.bungalow}</span></div>
-            <div class="details-row"><span class="details-label">Check-in</span> <span>${conversation.check_in || 'N/A'}</span></div>
-            <div class="details-row"><span class="details-label">Check-out</span> <span>${conversation.check_out || 'N/A'}</span></div>
+        // Automated WhatsApp Templates (n8n v2 dispatcher)
+        html += `
+            <div style="border-top: 1px solid var(--border); margin: 12px 0 8px;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-teal);">
+                    WhatsApp Templates (n8n)
+                </span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;" id="sidebar-templates-container">
+                <button class="btn-sm btn-secondary sidebar-template-btn" style="width: 100%; justify-content: flex-start; gap: 8px; font-size: 0.78rem; padding: 6px 10px; border-color: rgba(13, 148, 136, 0.4);" onclick="window.sendBookingTemplate('${booking.id}', 'pre_arrival', '', this)">
+                    <i data-lucide="door-open" style="width: 14px; height: 14px; color: var(--accent-teal);"></i> Pre-Arrival (Check-in)
+                </button>
+                <button class="btn-sm btn-secondary sidebar-template-btn" style="width: 100%; justify-content: flex-start; gap: 8px; font-size: 0.78rem; padding: 6px 10px; border-color: rgba(13, 148, 136, 0.4);" onclick="window.sendBookingTemplate('${booking.id}', 'pre_checkout', '', this)">
+                    <i data-lucide="log-out" style="width: 14px; height: 14px; color: var(--accent-teal);"></i> Pre-Checkout Reminder
+                </button>
+                <button class="btn-sm btn-secondary sidebar-template-btn" style="width: 100%; justify-content: flex-start; gap: 8px; font-size: 0.78rem; padding: 6px 10px; border-color: rgba(13, 148, 136, 0.4);" onclick="window.sendBookingTemplate('${booking.id}', 'post_checkout_thankyou', '', this)">
+                    <i data-lucide="heart" style="width: 14px; height: 14px; color: var(--accent-teal);"></i> Post-Checkout (Thank You)
+                </button>
+            </div>
         `;
+
+        resDetails.innerHTML = html;
+        if (window.lucide) lucide.createIcons({}, resDetails);
     } else {
-        resDetails.innerHTML = '<p>No active booking.</p>';
+        if (editBookingBtn) {
+            editBookingBtn.title = "Add Booking";
+            editBookingBtn.innerHTML = '<i data-lucide="plus" style="width: 16px; height: 16px;"></i>';
+        }
+        resDetails.innerHTML = `
+            <div style="text-align: center; padding: 1.25rem 0.5rem;">
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem;">No active booking for this guest.</p>
+                <button id="thread-create-booking-btn" class="btn-primary" style="font-size: 0.8rem; padding: 0.45rem 0.9rem; display: inline-flex; align-items: center; gap: 6px; margin: 0 auto;">
+                    <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Booking
+                </button>
+            </div>
+        `;
+        document.getElementById('thread-create-booking-btn')?.addEventListener('click', () => {
+            if (typeof window.openCreateBookingModalForContact === 'function') {
+                window.openCreateBookingModalForContact({
+                    contact: data.contact,
+                    conversation: data.conversation
+                });
+            }
+        });
     }
 
     if (window.lucide) {
@@ -1253,6 +1302,16 @@ function setupEventListeners() {
             return;
         }
 
+        // No active booking: open Create Booking modal bound to this contact!
+        if (typeof window.openCreateBookingModalForContact === 'function') {
+            const name = document.getElementById('thread-name')?.textContent;
+            window.openCreateBookingModalForContact({
+                contact: currentContactData || { phone: currentPhone, name: name === 'Unknown Guest' ? '' : name },
+                conversation: { id: currentConvId }
+            });
+            return;
+        }
+
         const name = document.getElementById('thread-name').textContent;
         document.getElementById('booking-name').value = name === 'Unknown Guest' ? '' : name;
 
@@ -1462,6 +1521,32 @@ function openCommandModal(cmd, targetPhone = null, initialParams = {}) {
                 label: cmd.replace(/_/g, ' ').toUpperCase(),
                 required_params: cmd === 'balance_due' ? [{ name: 'amount', label: 'Amount ($X.XX)', required: true }] : []
             };
+        }
+    }
+
+    // Intercept template commands that run through the new n8n Template Dispatcher pipeline
+    const templateCmdMap = {
+        'pre_arrival_message': 'pre_arrival',
+        'pre_arrival': 'pre_arrival',
+        'pre_checkout': 'pre_checkout',
+        'post_checkout_thankyou': 'post_checkout_thankyou'
+    };
+
+    if (templateCmdMap[cmdObj.command]) {
+        const templateKey = templateCmdMap[cmdObj.command];
+        if (window.currentBookingData && window.currentBookingData.id) {
+            if (typeof window.sendBookingTemplate === 'function') {
+                window.sendBookingTemplate(window.currentBookingData.id, templateKey);
+                return;
+            }
+        } else {
+            const friendly = templateKey.replace(/_/g, ' ');
+            if (window.showToast) {
+                window.showToast(`An active booking is required to send the "${friendly}" template. Please select a conversation with an active booking first.`, "warning");
+            } else {
+                alert(`An active booking is required to send the "${friendly}" template. Please select a conversation with an active booking first.`);
+            }
+            return;
         }
     }
 

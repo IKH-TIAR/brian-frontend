@@ -654,7 +654,12 @@
         <div class="modal-content pricing-modal-content" style="max-width: 900px;">
             <div class="modal-header">
                 <h2>Bookings Management</h2>
-                <button class="icon-btn" id="close-bookings-btn"><i data-lucide="x"></i></button>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="btn-primary" id="open-create-booking-btn" style="display: none; align-items: center; gap: 6px; padding: 0.45rem 0.85rem; font-size: 0.85rem;">
+                        <i data-lucide="plus" style="width: 15px; height: 15px;"></i> New Booking
+                    </button>
+                    <button class="icon-btn" id="close-bookings-btn"><i data-lucide="x"></i></button>
+                </div>
             </div>
             <div class="bookings-filters-bar"
                 style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;">
@@ -679,6 +684,143 @@
                 </div>
             </div>
             <div id="bookings-list-container" class="bookings-grid"></div>
+        </div>
+    </div>
+
+    <!-- CREATE NEW BOOKING MODAL -->
+    <div id="create-booking-modal" class="modal">
+        <div class="modal-content" style="max-width: 750px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 id="cb-modal-title">Create Booking</h3>
+                <button class="icon-btn" id="close-create-booking-btn"><i data-lucide="x"></i></button>
+            </div>
+
+            <form id="create-booking-form">
+                <input type="hidden" id="cb-contact-id">
+                <input type="hidden" id="cb-conversation-id">
+                <!-- Guest & Contact Info -->
+                <div class="booking-detail-grid" style="margin-bottom: 1rem;">
+                    <div>
+                        <label class="form-label-sm">Phone Number <span style="color:#f87171;">*</span> <span id="cb-phone-badge" style="font-size: 0.72rem; color: var(--accent-teal); margin-left: 6px; font-weight: normal;">(Linked Contact)</span></label>
+                        <input type="text" id="cb-phone" class="form-input-sm" readonly required style="width: 100%; opacity: 0.9; cursor: not-allowed; background: rgba(255,255,255,0.04);">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Guest Full Name <span style="color:#f87171;">*</span></label>
+                        <input type="text" id="cb-guest-name" class="form-input-sm" placeholder="e.g. John Doe" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Language</label>
+                        <select id="cb-language" class="form-select-sm" style="width: 100%;">
+                            <option value="english">English</option>
+                            <option value="spanish">Spanish</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Booking Source</label>
+                        <select id="cb-source" class="form-select-sm" style="width: 100%;">
+                            <option value="direct">Direct</option>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="airbnb">Airbnb</option>
+                            <option value="vrbo">VRBO</option>
+                            <option value="booking.com">Booking.com</option>
+                            <option value="phone">Phone Call</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Initial Status</label>
+                        <select id="cb-status" class="form-select-sm" style="width: 100%;">
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="checked_in">Checked In</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Reservation Reference (Optional)</label>
+                        <input type="text" id="cb-ref" class="form-input-sm" placeholder="e.g. HB-2026-001" style="width: 100%;">
+                    </div>
+                </div>
+
+                <!-- Stay Details Grid -->
+                <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin: 1rem 0 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Stay & Unit Details</h4>
+                <div class="booking-detail-grid" style="margin-bottom: 1rem;">
+                    <div>
+                        <label class="form-label-sm">Check-in Date <span style="color:#f87171;">*</span></label>
+                        <input type="date" id="cb-check-in" class="form-input-sm" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Check-out Date <span style="color:#f87171;">*</span></label>
+                        <input type="date" id="cb-check-out" class="form-input-sm" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Checkout Time</label>
+                        <input type="time" id="cb-checkout-time" value="11:00" class="form-input-sm" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Guest Count</label>
+                        <input type="number" min="1" id="cb-guest-count" value="1" class="form-input-sm" style="width: 100%;">
+                    </div>
+                    <div style="display: flex; align-items: center; margin-top: 1.25rem;">
+                        <label class="checkbox-label" style="margin: 0; font-size: 0.85rem;">
+                            <input type="checkbox" id="cb-has-pets"> Bringing Pets 🐾
+                        </label>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Bungalow / Property</label>
+                        <select id="cb-property" class="form-select-sm" style="width: 100%;">
+                            <option value="">-- Select Bungalow --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Financials Grid -->
+                <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin: 1rem 0 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Financial Details</h4>
+                <div class="booking-financials-grid"
+                    style="margin-bottom: 1rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border);">
+                    <div>
+                        <label class="form-label-sm">Total Amount ($)</label>
+                        <input type="number" step="0.01" min="0" id="cb-total-amount" value="0.00" class="form-input-sm" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Deposit Amount ($)</label>
+                        <input type="number" step="0.01" min="0" id="cb-deposit-amount" value="0.00" class="form-input-sm" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Refundable Deposit ($)</label>
+                        <input type="number" step="0.01" min="0" id="cb-refundable-deposit" value="0.00" class="form-input-sm" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Final Payment ($)</label>
+                        <input type="number" step="0.01" min="0" id="cb-final-payment-amount" value="0.00" class="form-input-sm" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Balance Due ($)</label>
+                        <input type="number" step="0.01" min="0" id="cb-balance-due" value="0.00" class="form-input-sm" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Deposit Due Date</label>
+                        <input type="date" id="cb-deposit-due-date" class="form-input-sm" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label class="form-label-sm">Payment Due Date</label>
+                        <input type="date" id="cb-payment-due-date" class="form-input-sm" style="width: 100%;">
+                    </div>
+                </div>
+
+                <!-- Internal Notes -->
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label class="form-label-sm">Internal Notes</label>
+                    <textarea id="cb-notes" rows="2" class="form-input-sm" placeholder="Any private notes about this reservation..."
+                        style="width: 100%; resize: vertical; font-family: inherit;"></textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="modal-actions">
+                    <button type="button" id="cancel-create-booking-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="save-create-booking-btn" class="btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <i data-lucide="check" style="width: 15px; height: 15px;"></i> Create Booking
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1101,8 +1243,8 @@
 
     <script src="js/env.js?v=3"></script>
     <script src="js/api.js?v=17"></script>
-    <script src="js/app.js?v=33"></script>
-    <script src="js/bookings.js?v=13"></script>
+    <script src="js/app.js?v=35"></script>
+    <script src="js/bookings.js?v=15"></script>
 </body>
 
 </html>

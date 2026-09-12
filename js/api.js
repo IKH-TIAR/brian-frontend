@@ -118,6 +118,15 @@ class ApiClient {
         });
     }
 
+    async sendTemplate(bookingId, templateKey, bookingUnitId = null) {
+        const payload = { template_key: templateKey };
+        if (bookingUnitId) payload.booking_unit_id = bookingUnitId;
+        return this.request(`/admin/bookings/${encodeURIComponent(bookingId)}/send-template`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
     async sendAdminReply(phone, text) {
         return this.request(`/admin-reply`, {
             method: 'POST',
